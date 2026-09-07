@@ -59,7 +59,7 @@
         .badge-turno { background-color: rgba(52, 152, 219, 0.2); color: #3498db; border: 1px solid #3498db; }
         .badge-ronda { background-color: rgba(155, 89, 182, 0.2); color: #9b59b6; border: 1px solid #9b59b6; }
         .badge-formato { background-color: rgba(230, 126, 34, 0.2); color: #e67e22; border: 1px solid #e67e22; }
-        .badge-secuencia { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; font-family: monospace; }
+        .badge-secuencia { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; font-family: monospace; }
         
         .notas { font-size: 0.85em; color: #ccc; background-color: #1e1e1e; padding: 10px; border-radius: 6px; margin: 0; border-left: 3px solid #555; }
     </style>
@@ -189,14 +189,14 @@
                 return;
             }
 
-            contenedor.innerHTML = "";
-            
-            // Cargar también los perfiles para mostrar nombres personalizados y avatares si los hay
+            // Cargar perfiles de la base de datos para extraer nombres y avatares personalizados
             const { data: perfiles } = await supabaseClient.from('perfiles').select('*');
             const mapaPerfiles = {};
             if (perfiles) {
                 perfiles.forEach(p => { mapaPerfiles[p.id] = p; });
             }
+
+            contenedor.innerHTML = "";
 
             idsUnicos.forEach((idJugador, index) => {
                 const perfil = mapaPerfiles[idJugador];
@@ -207,7 +207,7 @@
                 card.className = 'miembro-card';
                 card.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        ${avatarUrl ? `<img src="${avatarUrl}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;">` : `<div style="width:40px; height:40px; border-radius:50%; background:#333; display:flex; align-items:center; justify-content:center;">👤</div>`}
+                        ${avatarUrl ? `<img src="${avatarUrl}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border: 2px solid #e3350d;">` : `<div style="width:40px; height:40px; border-radius:50%; background:#333; display:flex; align-items:center; justify-content:center; border: 2px solid #555;">👤</div>`}
                         <div class="miembro-info">
                             <h4>${nombreMostrar}</h4>
                             <p style="font-family:monospace; font-size:0.75em; color:#777;">ID: ${idJugador.substring(0, 8)}...</p>
