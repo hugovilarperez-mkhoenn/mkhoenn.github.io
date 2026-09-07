@@ -63,18 +63,18 @@
             body { flex-direction: column; overflow: auto; height: auto; }
             .sidebar { position: fixed; top: 0; left: -240px; height: 100%; width: 240px; }
             .sidebar.open { transform: translateX(240px); }
-            .mobile-header { display: flex; }
+            .mobile-header { display: flex !important; }
             .sidebar-overlay.open { display: block; }
-            .main-content { padding: 15px; height: auto; }
+            .main-content { padding: 15px; height: auto; margin-top: 60px !important; }
         }
     </style>
 </head>
 <body>
 
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="mobile-header" style="width: 100%; position: fixed; top: 0; z-index: 99;">
-        <span style="font-weight: bold; color: #e3350d; font-size: 1.1em;">PANEL TCG</span>
-        <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+    <div class="mobile-header" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: #1a1a1a; padding: 12px 20px; border-bottom: 1px solid #2a2a2a; align-items: center; justify-content: space-between; z-index: 99;">
+        <span style="font-weight: bold; color: #e3350d; font-size: 1.1em; letter-spacing: 1px;">PANEL TCG</span>
+        <button class="hamburger-btn" onclick="toggleSidebar()" style="background: none; border: none; color: white; font-size: 1.5em; cursor: pointer;">☰</button>
     </div>
 
     <div class="sidebar" id="sidebar">
@@ -95,7 +95,7 @@
 
     <datalist id="lista-mazos-meta"></datalist>
 
-    <div class="main-content" style="margin-top: 50px;">
+    <div class="main-content">
         <div class="card" style="flex: 0.9;">
             <h3 style="margin-top:0;">Calendario de Torneos</h3>
             
