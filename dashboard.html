@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel - Mis Partidas</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        .sidebar { width: 240px; background-color: #1a1a1a; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #2a2a2a; }
+        .sidebar-top { padding: 20px; }
+        .sidebar h2 { font-size: 1.1em; color: #e3350d; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-links { display: flex; flex-direction: column; gap: 8px; }
+        .nav-link { display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #aaa; text-decoration: none; border-radius: 6px; font-weight: bold; transition: all 0.2s; }
+        .nav-link:hover { background-color: #2a2a2a; color: white; }
+        .nav-link.active { background-color: #e3350d; color: white; }
+        .sidebar-bottom { padding: 20px; border-top: 1px solid #2a2a2a; display: flex; flex-direction: column; gap: 8px; }
+        
+        .main-content { flex: 1; overflow-y: auto; padding: 30px; display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
+        .card { background-color: #1e1e1e; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); flex: 1; min-width: 320px; }
+        
+        label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; font-size: 0.85em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; box-sizing: border-box; background-color: #2a2a2a; color: white; font-family: inherit; transition: border-color 0.3s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #e3350d; }
+        
+        button { width: 100%; padding: 12px; background-color: #e3350d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; transition: background-color 0.2s; }
+        button:hover { background-color: #b32a0a; }
+        .btn-logout { width: 100%; background-color: #333; padding: 10px; font-size: 0.85em; border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; }
+        .btn-logout:hover { background-color: #444; }
+        
+        .input-group { display: flex; align-items: center; gap: 10px; background-color: #2a2a2a; border-radius: 6px; border: 1px solid #333; overflow: hidden; padding-right: 10px; }
+        .input-group input { border: none; border-radius: 0; background: transparent; flex-grow: 1; }
+        .input-group input:focus { border-color: transparent; outline: none; }
+        .input-group:focus-within { border-color: #e3350d; }
+        .live-preview { display: flex; gap: -10px; align-items: center; min-width: 40px; justify-content: flex-end; }
+
+        .winrate-container { width: 100%; background-color: #2a2a2a; border-radius: 8px; height: 12px; display: flex; overflow: hidden; margin-bottom: 10px; }
+        .bar-win { background-color: #4dff4d; transition: width 0.5s; }
+        .bar-loss { background-color: #ff4d4d; transition: width 0.5s; }
+        .bar-tie { background-color: #ffcc00; transition: width 0.5s; }
+        .stats-text { display: flex; justify-content: space-between; font-size: 0.85em; color: #aaa; margin-bottom: 15px; font-weight: bold; }
+        
+        .deck-stats-list { margin-bottom: 25px; display: flex; flex-direction: column; gap: 10px; }
+        .deck-stat-item { background-color: #2a2a2a; border: 1px solid #333; border-radius: 8px; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
+        .deck-stat-info { display: flex; align-items: center; gap: 8px; font-weight: bold; }
+        .deck-stat-record { font-family: monospace; font-size: 1.1em; }
+        
+        .matchup-item { background-color: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #333; }
+        .matchup-header { display: flex; justify-content: space-between; align-items: center; }
+        .mazos-container { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .mazo-display { display: flex; align-items: center; gap: 8px; font-size: 1.1em; font-weight: bold; background-color: #1e1e1e; padding: 5px 12px; border-radius: 20px; }
+        
+        .sprites-wrapper { display: flex; align-items: center; margin-right: 5px; }
+        .pkmn-sprite { width: 40px; height: 40px; object-fit: contain; margin-left: -10px; background: rgba(255,255,255,0.05); border-radius: 50%; padding: 2px; }
+        .pkmn-sprite:first-child { margin-left: 0; }
+        
+        .vs-text { color: #aaa; font-weight: normal; font-size: 0.9em; font-style: italic; }
+        .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
+        .badge-victoria { background-color: rgba(77, 255, 77, 0.2); color: #4dff4d; border: 1px solid #4dff4d; }
+        .badge-derrota { background-color: rgba(255, 77, 77, 0.2); color: #ff4d4d; border: 1px solid #ff4d4d; }
+        .badge-empate { background-color: rgba(255, 204, 0, 0.2); color: #ffcc00; border: 1px solid #ffcc00; }
+        .badge-turno { background-color: rgba(52, 152, 219, 0.2); color: #3498db; border: 1px solid #3498db; }
+        .badge-ronda { background-color: rgba(155, 89, 182, 0.2); color: #9b59b6; border: 1px solid #9b59b6; }
+        .badge-formato { background-color: rgba(230, 126, 34, 0.2); color: #e67e22; border: 1px solid #e67e22; }
+        .badge-secuencia { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; font-family: monospace; }
+        
+        .notas { font-size: 0.85em; color: #ccc; background-color: #1e1e1e; padding: 10px; border-radius: 6px; margin: 0; border-left: 3px solid #555; }
+        .acciones { display: flex; gap: 10px; }
+        .icon-btn { background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 5px; margin: 0; color: white; opacity: 0.7; }
+        .icon-btn:hover { transform: scale(1.2); opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <h2>Panel TCG</h2>
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link active">📊 Mis Partidas</a>
+                <a href="torneos.html" class="nav-link">🏆 Torneos</a>
+                <a href="equipo.html" class="nav-link">👥 Miembros</a>
+            </div>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="perfil.html" class="nav-link" style="padding: 10px 15px; background-color: #2a2a2a; border-radius: 6px; color: white; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px;">⚙️ Mi Perfil</a>
+            <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <datalist id="lista-mazos-meta"></datalist>
+
+    <div class="main-content">
+        <div class="card" style="flex: 0.8;">
+            <h3 id="titulo-formulario" style="margin-top:0;">Registrar Mi Partida</h3>
+            <form id="formularioMatchup">
+                
+                <label for="tu_baraja">Tu Baraja</label>
+                <div class="input-group">
+                    <input type="text" id="tu_baraja" list="lista-mazos-meta" placeholder="Ej: Dragapult" required autocomplete="off">
+                    <div id="preview-tu" class="live-preview sprites-wrapper"></div>
+                </div>
+
+                <label for="baraja_rival">Baraja Rival</label>
+                <div class="input-group">
+                    <input type="text" id="baraja_rival" list="lista-mazos-meta" placeholder="Ej: N's Zoroark" required autocomplete="off">
+                    <div id="preview-rival" class="live-preview sprites-wrapper"></div>
+                </div>
+
+                <label for="formato">Formato</label>
+                <select id="formato" onchange="cambiarFormato()">
+                    <option value="Bo1">Al mejor de 1 (Bo1)</option>
+                    <option value="Bo3">Al mejor de 3 (Bo3)</option>
+                </select>
+
+                <div id="seccion-bo3" style="display: none; background: #222; padding: 12px; border-radius: 6px; margin-top: 10px; border: 1px dashed #444;">
+                    <label style="margin-top:0; color:#e67e22;">Secuencia de Juegos</label>
+                    <div style="display: flex; gap: 10px; margin-top: 8px;">
+                        <div style="flex:1;">
+                            <label style="font-size:0.75em;">Juego 1</label>
+                            <select id="juego_1" onchange="verificarPartidaEmpatada()">
+                                <option value="V">Victoria</option>
+                                <option value="D">Derrota</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:0.75em;">Juego 2</label>
+                            <select id="juego_2" onchange="verificarPartidaEmpatada()">
+                                <option value="V">Victoria</option>
+                                <option value="D">Derrota</option>
+                            </select>
+                        </div>
+                        <div id="contenedor-juego-3" style="flex:1; display: none;">
+                            <label style="font-size:0.75em;">Juego 3</label>
+                            <select id="juego_3">
+                                <option value="V">Victoria</option>
+                                <option value="D">Derrota</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <label for="empiezas_tu">Orden de Turno (Juego 1)</label>
+                <select id="empiezas_tu" required>
+                    <option value="true">Fui 1º</option>
+                    <option value="false">Fui 2º</option>
+                </select>
+
+                <label for="resultado">Resultado Global de la Serie</label>
+                <select id="resultado" required>
+                    <option value="Victoria">Victoria</option>
+                    <option value="Derrota">Derrota</option>
+                    <option value="Empate">Empate</option>
+                </select>
+
+                <label for="ronda_suiza">Ronda Suiza (Opcional)</label>
+                <input type="text" id="ronda_suiza" placeholder="Ej: Ronda 3 o Top 8">
+
+                <label for="notas">Notas / Resumen</label>
+                <textarea id="notas" rows="3" placeholder="¿Qué salió bien o mal?"></textarea>
+
+                <button type="submit" id="btn-submit">Guardar Partida</button>
+                <button type="button" id="btn-cancelar" style="display:none; background-color: #555;" onclick="cancelarEdicion()">Cancelar Edición</button>
+                <div id="mensaje"></div>
+            </form>
+        </div>
+
+        <div class="card" style="flex: 1.5;">
+            <h3 style="margin-top:0;">Tus Estadísticas Generales</h3>
+            <div class="winrate-container">
+                <div id="bar-w" class="bar-win" style="width: 0%;"></div>
+                <div id="bar-t" class="bar-tie" style="width: 0%;"></div>
+                <div id="bar-l" class="bar-loss" style="width: 0%;"></div>
+            </div>
+            <div class="stats-text">
+                <span id="stat-w" style="color:#4dff4d">0% Victorias</span>
+                <span id="stat-t" style="color:#ffcc00">0% Empates</span>
+                <span id="stat-l" style="color:#ff4d4d">0% Derrotas</span>
+            </div>
+
+            <h3 style="border-top: 1px solid #333; padding-top: 20px;">Tus Estadísticas por Mazo</h3>
+            <div id="lista-stats-mazos" class="deck-stats-list"></div>
+
+            <h3 style="border-top: 1px solid #333; padding-top: 20px;">Tu Historial de Partidas</h3>
+            <div id="lista-partidas">
+                <p style="color: #aaa;">Cargando partidas...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://xacmsdklvvturxmabhcn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhY21zZGtsdnZ0dXJ4bWFiaGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODY4ODQsImV4cCI6MjEwNDM2Mjg4NH0.Bq9whfVe5Ah7Kz8NUKWTu5lZqGZRzHZSk-5xy3sHmWQ';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let usuarioActual = null;
+        let listaGlobalPartidas = []; 
+        let idPartidaEditando = null; 
+
+        const arquetiposBase = [
+            "Dragapult", "Mega Excadrill", "Alakazam Dudunsparce", "Festival Lead", 
+            "Dragapult Blaziken", "Dragapult Dusknoir", "Slowking", "N's Zoroark", 
+            "Grimmsnarl Froslass", "Dhelmise Hide n' Sneak", "Toucannon", "Raging Bolt Ogerpon", 
+            "Mega Lucario", "Lucario Hariyama", "Basic Box", "Mega Greninja", 
+            "Ogerpon Meganium Hydrapple", "Rocket's Honchkrow", "Cynthia's Garchomp", 
+            "Mega Chandelure", "Beedrill", "Crustle", "Mega Absol Box", "Rocket's Mewtwo", 
+            "Kangaskhan Bouffalant", "Greninja", "Hop's Trevenant", "Lopunny Dudunsparce", 
+            "Manectric Eelektrik", "Starmie Froslass", "Lopunny Dusknoir", "Ethan's Typhlosion", 
+            "Toxtricity Box", "Ceruledge", "Dragapult Dudunsparce", "Ogerpon Meganium Arboliva", 
+            "Mega Venusaur", "Mega Darkrai", "Starmie Dusknoir", "Mega Starmie", "Cinccino", 
+            "Sharpedo Toxtricity", "Steven's Metagross", "Alakazam Dusknoir", "Toxtricity", 
+            "Blaziken Zoroark", "Clefairy Ogerpon", "Okidogi Barbaracle", "Froslass Munkidori", 
+            "Lillie's Clefairy", "Mega Froslass", "Mega Abomasnow", "Mega Charizard X", 
+            "Metagross", "Flareon Noctowl", "Hydreigon", "Mega Dragonite", "Diancie Dusknoir", 
+            "Doublade", "Wailord", "Tera Box", "Hop's Zacian", "Marnie's Grimmsnarl", 
+            "Erika's Victreebel", "Froslass Dudunsparce", "Zygarde Barbaracle", "Ogerpon Meganium", 
+            "Iron Thorns", "Seaking Festival Lead", "Palafin", "Bronzong", "Iono's Bellibolt", 
+            "Ursaluna Lunatone", "Azumarill", "Archaludon"
+        ];
+
+        async function comprobarAutenticacion() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) { window.location.href = "index.html"; } 
+            else { usuarioActual = user; cargarPartidas(); }
+        }
+        comprobarAutenticacion();
+
+        async function cerrarSesion() {
+            await supabaseClient.auth.signOut();
+            window.location.href = "index.html";
+        }
+
+        function cambiarFormato() {
+            const formato = document.getElementById('formato').value;
+            const seccionBo3 = document.getElementById('seccion-bo3');
+            seccionBo3.style.display = formato === 'Bo3' ? 'block' : 'none';
+            if (formato === 'Bo3') verificarPartidaEmpatada();
+        }
+
+        function verificarPartidaEmpatada() {
+            const j1 = document.getElementById('juego_1').value;
+            const j2 = document.getElementById('juego_2').value;
+            const contenedorJ3 = document.getElementById('contenedor-juego-3');
+            if (j1 !== j2) {
+                contenedorJ3.style.display = 'block';
+            } else {
+                contenedorJ3.style.display = 'none';
+            }
+        }
+
+        const diccionarioArquetipos = {
+            "basic box": ["ogerpon", "clefairy"],
+            "festival lead": ["dipplin", "thwackey"],
+            "dhelmise hide n' sneak": ["dhelmise", "banette"],
+            "seaking festival lead": ["seaking", "thwackey"],
+            "toxtricity box": ["toxtricity", "absol"],
+            "mega absol box": ["absol", "kangaskhan"],
+            "rocket's mewtwo": ["mewtwo", "spidops"],
+            "tera box": ["terapagos", "ogerpon"],
+            "marnie's grimmsnarl": ["grimmsnarl", "froslass"],
+            "grimmsnarl froslass": ["grimmsnarl", "froslass"]
+        };
+
+        function generarSpritesHtml(textoMazo) {
+            if (!textoMazo) return "";
+            let textoMin = textoMazo.toLowerCase().trim();
+            let listaPokemons = [];
+
+            if (diccionarioArquetipos[textoMin]) {
+                listaPokemons = diccionarioArquetipos[textoMin];
+            } else {
+                let limpio = textoMin;
+                limpio = limpio.replace(/\b(ex|v|vmax|vstar|gx|box|deck|hand|inspire|lead|inn|sneak|surge|mega|n's|rocket's|hop's|cynthia's|steven's|marnie's|erika's|lillie's)\b/g, '');
+                limpio = limpio.replace(/['’]s/g, ''); 
+                let palabras = limpio.split(/\s+/).filter(p => p.length > 2);
+                listaPokemons = palabras.slice(0, 2);
+                if (listaPokemons.length === 0 && textoMin.length > 0) {
+                    listaPokemons = [textoMin.replace(/[^a-z]/g, '')];
+                }
+            }
+
+            let html = "";
+            listaPokemons.forEach(pkmn => {
+                const cleanName = pkmn.replace(/[^a-z]/g, '');
+                if (cleanName) {
+                    html += `<img src="https://play.pokemonshowdown.com/sprites/dex/${cleanName}.png" class="pkmn-sprite" onerror="this.style.display='none'" title="${cleanName}">`;
+                }
+            });
+            return html;
+        }
+
+        function actualizarDatalistDinamico(partidas) {
+            const datalist = document.getElementById('lista-mazos-meta');
+            const mazosPersonalizados = new Set();
+            partidas.forEach(p => {
+                if (p.tu_baraja) mazosPersonalizados.add(p.tu_baraja.trim());
+                if (p.baraja_rival) mazosPersonalizados.add(p.baraja_rival.trim());
+            });
+            const setCompleto = new Set([...arquetiposBase, ...mazosPersonalizados]);
+
+            datalist.innerHTML = "";
+            setCompleto.forEach(mazo => {
+                const option = document.createElement('option');
+                option.value = mazo;
+                datalist.appendChild(option);
+            });
+        }
+
+        document.getElementById('tu_baraja').addEventListener('input', function(e) {
+            document.getElementById('preview-tu').innerHTML = generarSpritesHtml(e.target.value);
+        });
+        document.getElementById('baraja_rival').addEventListener('input', function(e) {
+            document.getElementById('preview-rival').innerHTML = generarSpritesHtml(e.target.value);
+        });
+
+        async function cargarPartidas() {
+            const contenedorPartidas = document.getElementById('lista-partidas');
+            
+            const { data, error } = await supabaseClient
+                .from('matchups')
+                .select('*')
+                .eq('id_jugador', usuarioActual.id)
+                .order('creado_en', { ascending: false });
+
+            if (error) {
+                contenedorPartidas.innerHTML = "<p style='color:#ff4d4d;'>Error al cargar tus partidas.</p>";
+                return;
+            }
+
+            listaGlobalPartidas = data; 
+            actualizarEstadisticas(data);
+            actualizarEstadisticasPorMazo(data);
+            actualizarDatalistDinamico(data);
+            
+            if (data.length === 0) {
+                contenedorPartidas.innerHTML = "<p style='color: #aaa;'>Aún no has registrado ninguna partida.</p>";
+                return;
+            }
+
+            contenedorPartidas.innerHTML = "";
+
+            data.forEach(partida => {
+                const item = document.createElement('div');
+                item.className = 'matchup-item';
+                
+                let claseResultado = `badge-${partida.resultado.toLowerCase()}`;
+                const ordenTurno = partida.empiezas_tu ? 'Fui 1º' : 'Fui 2º';
+                let htmlRonda = partida.ronda_suiza ? `<span class="badge badge-ronda">🏆 ${partida.ronda_suiza}</span>` : '';
+                let htmlNotas = partida.notas ? `<p class="notas">📝 ${partida.notas}</p>` : '';
+                
+                let htmlFormato = partida.formato === 'Bo3' && partida.secuencia_bo3 
+                    ? `<span class="badge badge-secuencia">Bo3: ${partida.secuencia_bo3}</span>` 
+                    : `<span class="badge badge-formato">Bo1</span>`;
+
+                const htmlSpritesTu = generarSpritesHtml(partida.tu_baraja);
+                const htmlSpritesRival = generarSpritesHtml(partida.baraja_rival);
+
+                item.innerHTML = `
+                    <div class="matchup-header">
+                        <div class="mazos-container">
+                            <div class="mazo-display"><div class="sprites-wrapper">${htmlSpritesTu}</div> <span>${partida.tu_baraja}</span></div>
+                            <span class="vs-text">VS</span>
+                            <div class="mazo-display"><div class="sprites-wrapper">${htmlSpritesRival}</div> <span>${partida.baraja_rival}</span></div>
+                        </div>
+                        <div class="acciones">
+                            <button class="icon-btn" onclick="prepararEdicion(${partida.id})" title="Editar">✏️</button>
+                            <button class="icon-btn" onclick="borrarPartida(${partida.id})" title="Borrar">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="badges">
+                        <span class="badge ${claseResultado}">${partida.resultado}</span>
+                        ${htmlFormato}
+                        <span class="badge badge-turno">⏱️ ${ordenTurno}</span>
+                        ${htmlRonda}
+                    </div>
+                    ${htmlNotas}
+                `;
+                contenedorPartidas.appendChild(item);
+            });
+        }
+
+        function actualizarEstadisticas(partidas) {
+            if (partidas.length === 0) return;
+            let w = 0, l = 0, t = 0;
+            partidas.forEach(p => {
+                if(p.resultado === "Victoria") w++;
+                else if(p.resultado === "Derrota") l++;
+                else t++;
+            });
+            const total = partidas.length;
+            const pw = Math.round((w / total) * 100);
+            const pt = Math.round((t / total) * 100);
+            const pl = Math.round((l / total) * 100);
+
+            document.getElementById('bar-w').style.width = `${pw}%`;
+            document.getElementById('bar-t').style.width = `${pt}%`;
+            document.getElementById('bar-l').style.width = `${pl}%`;
+
+            document.getElementById('stat-w').innerText = `${pw}% Victorias (${w})`;
+            document.getElementById('stat-t').innerText = `${pt}% Empates (${t})`;
+            document.getElementById('stat-l').innerText = `${pl}% Derrotas (${l})`;
+        }
+
+        function actualizarEstadisticasPorMazo(partidas) {
+            const contenedorMazos = document.getElementById('lista-stats-mazos');
+            contenedorMazos.innerHTML = "";
+
+            if (partidas.length === 0) {
+                contenedorMazos.innerHTML = "<p style='color:#aaa; margin:0;'>No hay datos suficientes.</p>";
+                return;
+            }
+
+            const statsMazos = {};
+            partidas.forEach(p => {
+                if (!statsMazos[p.tu_baraja]) {
+                    statsMazos[p.tu_baraja] = { w: 0, l: 0, t: 0, jugadas: 0 };
+                }
+                statsMazos[p.tu_baraja].jugadas++;
+                if(p.resultado === "Victoria") statsMazos[p.tu_baraja].w++;
+                if(p.resultado === "Derrota") statsMazos[p.tu_baraja].l++;
+                if(p.resultado === "Empate") statsMazos[p.tu_baraja].t++;
+            });
+
+            const arrayStats = Object.entries(statsMazos).sort((a, b) => b[1].jugadas - a[1].jugadas);
+
+            arrayStats.forEach(([nombreMazo, stats]) => {
+                const spritesHtml = generarSpritesHtml(nombreMazo);
+                
+                const item = document.createElement('div');
+                item.className = 'deck-stat-item';
+                item.innerHTML = `
+                    <div class="deck-stat-info">
+                        <div class="sprites-wrapper">${spritesHtml}</div> <span>${nombreMazo}</span>
+                    </div>
+                    <div class="deck-stat-record">
+                        <span class="record-w">${stats.w}V</span> - 
+                        <span class="record-l">${stats.l}D</span> - 
+                        <span class="record-t">${stats.t}E</span>
+                    </div>
+                `;
+                contenedorMazos.appendChild(item);
+            });
+        }
+
+        async function borrarPartida(id) {
+            if (!confirm("¿Borrar este registro?")) return;
+            const { error } = await supabaseClient.from('matchups').delete().eq('id', id);
+            if (!error) cargarPartidas(); 
+        }
+
+        function prepararEdicion(id) {
+            const partida = listaGlobalPartidas.find(p => p.id === id);
+            if (!partida) return;
+            document.getElementById('tu_baraja').value = partida.tu_baraja;
+            document.getElementById('tu_baraja').dispatchEvent(new Event('input'));
+            
+            document.getElementById('baraja_rival').value = partida.baraja_rival;
+            document.getElementById('baraja_rival').dispatchEvent(new Event('input'));
+
+            document.getElementById('formato').value = partida.formato || 'Bo1';
+            cambiarFormato();
+            
+            if(partida.formato === 'Bo3' && partida.secuencia_bo3) {
+                const juegos = partida.secuencia_bo3.split('-');
+                document.getElementById('juego_1').value = juegos[0] || 'V';
+                document.getElementById('juego_2').value = juegos[1] || 'V';
+                verificarPartidaEmpatada();
+                if (juegos[2]) document.getElementById('juego_3').value = juegos[2];
+            }
+
+            document.getElementById('empiezas_tu').value = partida.empiezas_tu.toString();
+            document.getElementById('resultado').value = partida.resultado;
+            document.getElementById('ronda_suiza').value = partida.ronda_suiza || '';
+            document.getElementById('notas').value = partida.notas || '';
+            
+            idPartidaEditando = id;
+            document.getElementById('titulo-formulario').innerText = "Editar Partida";
+            document.getElementById('btn-submit').innerText = "Actualizar";
+            document.getElementById('btn-cancelar').style.display = "block";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function cancelarEdicion() {
+            idPartidaEditando = null;
+            document.getElementById('formularioMatchup').reset();
+            cambiarFormato();
+            document.getElementById('preview-tu').innerHTML = "";
+            document.getElementById('preview-rival').innerHTML = "";
+            document.getElementById('titulo-formulario').innerText = "Registrar Mi Partida";
+            document.getElementById('btn-submit').innerText = "Guardar Partida";
+            document.getElementById('btn-cancelar').style.display = "none";
+            document.getElementById('mensaje').innerText = "";
+        }
+
+        document.getElementById('formularioMatchup').addEventListener('submit', async function(evento) {
+            evento.preventDefault(); 
+            const divMensaje = document.getElementById('mensaje');
+            divMensaje.style.color = "white";
+            divMensaje.innerText = idPartidaEditando ? "Actualizando..." : "Guardando...";
+
+            const formatoSeleccionado = document.getElementById('formato').value;
+            let secuencia = 'V';
+            if (formatoSeleccionado === 'Bo3') {
+                const j1 = document.getElementById('juego_1').value;
+                const j2 = document.getElementById('juego_2').value;
+                const contenedorJ3 = document.getElementById('contenedor-juego-3');
+                secuencia = contenedorJ3.style.display !== 'none' 
+                    ? `${j1}-${j2}-${document.getElementById('juego_3').value}` 
+                    : `${j1}-${j2}`;
+            }
+
+            const datosPartida = {
+                id_jugador: usuarioActual.id,
+                tu_baraja: document.getElementById('tu_baraja').value.trim(),
+                baraja_rival: document.getElementById('baraja_rival').value.trim(),
+                formato: formatoSeleccionado,
+                secuencia_bo3: secuencia,
+                empiezas_tu: document.getElementById('empiezas_tu').value === 'true',
+                resultado: document.getElementById('resultado').value,
+                ronda_suiza: document.getElementById('ronda_suiza').value,
+                notas: document.getElementById('notas').value
+            };
+
+            let errorBd = idPartidaEditando 
+                ? (await supabaseClient.from('matchups').update(datosPartida).eq('id', idPartidaEditando)).error 
+                : (await supabaseClient.from('matchups').insert([datosPartida])).error;
+
+            if (errorBd) {
+                divMensaje.style.color = "#ff4d4d";
+                divMensaje.innerText = "Error al guardar.";
+            } else {
+                divMensaje.style.color = "#4dff4d";
+                divMensaje.innerText = "¡Hecho!";
+                cancelarEdicion();
+                cargarPartidas(); 
+                setTimeout(() => divMensaje.innerText = "", 3000);
+            }
+        });
+    </script>
+</body>
+</html>
