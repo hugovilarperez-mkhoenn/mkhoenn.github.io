@@ -371,10 +371,8 @@
                 
                 contenedor.appendChild(card);
                 
-                // Asignar valor preseleccionado de ronda de forma segura
                 const selectRondaEl = document.getElementById(`live-ronda-${ev.id}`);
                 if (selectRondaEl) {
-                    // Comprobar si la opción existe antes de asignarla
                     for (let opt of selectRondaEl.options) {
                         if (opt.value === siguienteRondaVal) {
                             selectRondaEl.value = siguienteRondaVal;
@@ -383,7 +381,6 @@
                     }
                 }
 
-                // Asignar evento al botón mediante addEventListener para garantizar que responde perfectamente
                 const btnReg = document.getElementById(`btn-reg-${ev.id}`);
                 if (btnReg) {
                     btnReg.addEventListener('click', () => {
