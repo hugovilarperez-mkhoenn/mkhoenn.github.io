@@ -52,7 +52,6 @@
         .pkmn-sprite:first-child { margin-left: 0; }
         .asistente-info { display: flex; align-items: center; gap: 8px; }
 
-        /* Estilo compacto para el botón de eliminar torneo */
         .icon-btn-delete { background: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.3); font-size: 1.1em; cursor: pointer; padding: 6px 10px; border-radius: 6px; margin: 0; width: auto; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
         .icon-btn-delete:hover { background: rgba(255, 77, 77, 0.3); transform: scale(1.05); }
     </style>
@@ -65,11 +64,12 @@
             <div class="nav-links">
                 <a href="dashboard.html" class="nav-link">📊 Partidas</a>
                 <a href="torneos.html" class="nav-link active">🏆 Torneos</a>
-                <a href="equipo.html" class="nav-link">👥 Miembros</a>
+                <a href="equipo.html" class="nav-link">👥 Miembros & Meta</a>
+                <a href="perfil.html" class="nav-link">👤 Mi Perfil</a>
             </div>
         </div>
         <div class="sidebar-bottom">
-            <a href="perfil.html" class="nav-link" style="padding: 10px 15px; background-color: #2a2a2a; border-radius: 6px; color: white; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px;">⚙️ Mi Perfil</a>
+            <a href="configuracion.html" class="nav-link" style="padding: 10px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px;">⚙️ Configuración</a>
             <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
     </div>
