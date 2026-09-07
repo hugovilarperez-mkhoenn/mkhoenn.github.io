@@ -286,19 +286,19 @@
                 // Configuración guardada o por defecto (4 rondas de suiza y Top 4)
                 const configTorneo = configuracionTorneosLocal[ev.id] || { totalRondas: 4, topCut: 'Top 4' };
                 
-                // Generar opciones del selector de rondas
+                // Generar opciones del selector de rondas de suiza
                 let opcionesRondasHtml = "";
                 for (let i = 1; i <= configTorneo.totalRondas; i++) {
                     opcionesRondasHtml += `<option value="Ronda ${i}">Ronda ${i}</option>`;
                 }
                 
-                // Opciones de Top Cut según selección
+                // Añadir fases de Top Cut y Final de manera inteligente si está configurado
                 if (configTorneo.topCut === 'Top 8') {
                     opcionesRondasHtml += `<option value="Top 8">Top 8</option>`;
-                    opcionesRondasHtml += `<option value="Top 4">Top 4</option>`;
+                    opcionesRondasHtml += `<option value="Top 4">Top 4 (Semifinales)</option>`;
                     opcionesRondasHtml += `<option value="Final">Final</option>`;
                 } else if (configTorneo.topCut === 'Top 4') {
-                    opcionesRondasHtml += `<option value="Top 4">Top 4</option>`;
+                    opcionesRondasHtml += `<option value="Top 4">Top 4 (Semifinales)</option>`;
                     opcionesRondasHtml += `<option value="Final">Final</option>`;
                 } else if (configTorneo.topCut === 'Final') {
                     opcionesRondasHtml += `<option value="Final">Final</option>`;
@@ -307,10 +307,20 @@
                 // Autoselección de siguiente ronda inteligente
                 let siguienteRondaVal = `Ronda ${numRondasRegistradas + 1}`;
                 if (numRondasRegistradas >= configTorneo.totalRondas) {
-                    if (configTorneo.topCut === 'Top 8' && numRondasRegistradas === configTorneo.totalRondas) siguienteRondaVal = 'Top 8';
-                    else if (configTorneo.topCut === 'Top 8' && numRondasRegistradas === configTorneo.totalRondas + 1) siguienteRondaVal = 'Top 4';
-                    else if (configTorneo.topCut === 'Top 4' && numRondasRegistradas === configTorneo.totalRondas) siguienteRondaVal = 'Top 4';
-                    else siguienteRondaVal = 'Final';
+                    if (configTorneo.topCut === 'Top 8') {
+                        if (numRondasRegistradas === configTorneo.totalRondas) siguienteRondaVal = 'Top 8';
+                        else if (numRondasRegistradas === configTorneo.totalRondas + 1) siguienteRondaVal = 'Top 4';
+                        else if (numRondasRegistradas === configTorneo.totalRondas + 2) siguienteRondaVal = 'Final';
+                        else siguienteRondaVal = 'Final';
+                    } else if (configTorneo.topCut === 'Top 4') {
+                        if (numRondasRegistradas === configTorneo.totalRondas) siguienteRondaVal = 'Top 4';
+                        else if (numRondasRegistradas === configTorneo.totalRondas + 1) siguienteRondaVal = 'Final';
+                        else siguienteRondaVal = 'Final';
+                    } else if (configTorneo.topCut === 'Final') {
+                        siguienteRondaVal = 'Final';
+                    } else {
+                        siguienteRondaVal = `Ronda ${configTorneo.totalRondas}`;
+                    }
                 }
 
                 const card = document.createElement('div');
