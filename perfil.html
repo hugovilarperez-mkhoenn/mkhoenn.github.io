@@ -59,7 +59,7 @@
             <div class="nav-links">
                 <a href="dashboard.html" class="nav-link">📊 Partidas</a>
                 <a href="torneos.html" class="nav-link">🏆 Torneos</a>
-                <a href="equipo.html" class="nav-link">👥 Miembros </a>
+                <a href="equipo.html" class="nav-link">👥 Miembros</a>
                 <a href="perfil.html" class="nav-link active">👤 Mi Perfil</a>
             </div>
         </div>
@@ -157,6 +157,14 @@
                 cargarDatosPerfil(); 
                 cargarTorneosLive();
                 cargarDatalistMazos();
+
+                // Detección automática de la subpestaña live por URL
+                if (window.location.hash === '#live') {
+                    const btnLive = document.querySelectorAll('.tab-btn')[1];
+                    if (btnLive) {
+                        cambiarPestana('live', { currentTarget: btnLive });
+                    }
+                }
             }
         }
         comprobarAutenticacion();
@@ -296,7 +304,7 @@
 
         async function registrarRondaLive(idEvento, mazoPropio, formatoTorneo) {
             const ronda = document.getElementById(`live-ronda-${idEvento}`).value;
-            const resultado = document.getElementById(`live-resultado-${idEvento}` ).value;
+            const resultado = document.getElementById(`live-resultado-${idEvento}`).value;
             const empiezaTu = document.getElementById(`live-turno-${idEvento}`).value === 'true';
             const mazoRival = document.getElementById(`live-rival-${idEvento}`).value.trim();
             const notas = document.getElementById(`live-notas-${idEvento}`).value.trim();
