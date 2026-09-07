@@ -283,22 +283,34 @@
                 const partidasTorneo = (partidasUsuario || []).filter(p => p.notas && p.notas.includes(`[Torneo ID: ${ev.id}]`));
                 const numRondasRegistradas = partidasTorneo.length;
                 
-                // Obtener configuración guardada de rondas y top cut para este torneo (por defecto 4 rondas de suiza y Top 4)
+                // Configuración guardada o por defecto (4 rondas de suiza y Top 4)
                 const configTorneo = configuracionTorneosLocal[ev.id] || { totalRondas: 4, topCut: 'Top 4' };
                 
-                // Generar opciones del selector de rondas según la configuración
+                // Generar opciones del selector de rondas
                 let opcionesRondasHtml = "";
                 for (let i = 1; i <= configTorneo.totalRondas; i++) {
                     opcionesRondasHtml += `<option value="Ronda ${i}">Ronda ${i}</option>`;
                 }
-                if (configTorneo.topCut !== 'Ninguno') {
-                    opcionesRondasHtml += `<option value="Top Cut">Top Cut (${configTorneo.topCut})</option>`;
+                
+                // Opciones de Top Cut según selección
+                if (configTorneo.topCut === 'Top 8') {
+                    opcionesRondasHtml += `<option value="Top 8">Top 8</option>`;
+                    opcionesRondasHtml += `<option value="Top 4">Top 4</option>`;
+                    opcionesRondasHtml += `<option value="Final">Final</option>`;
+                } else if (configTorneo.topCut === 'Top 4') {
+                    opcionesRondasHtml += `<option value="Top 4">Top 4</option>`;
+                    opcionesRondasHtml += `<option value="Final">Final</option>`;
+                } else if (configTorneo.topCut === 'Final') {
+                    opcionesRondasHtml += `<option value="Final">Final</option>`;
                 }
 
-                // Calcular la siguiente ronda automáticamente para autoseleccionarla
+                // Autoselección de siguiente ronda inteligente
                 let siguienteRondaVal = `Ronda ${numRondasRegistradas + 1}`;
                 if (numRondasRegistradas >= configTorneo.totalRondas) {
-                    siguienteRondaVal = 'Top Cut';
+                    if (configTorneo.topCut === 'Top 8' && numRondasRegistradas === configTorneo.totalRondas) siguienteRondaVal = 'Top 8';
+                    else if (configTorneo.topCut === 'Top 8' && numRondasRegistradas === configTorneo.totalRondas + 1) siguienteRondaVal = 'Top 4';
+                    else if (configTorneo.topCut === 'Top 4' && numRondasRegistradas === configTorneo.totalRondas) siguienteRondaVal = 'Top 4';
+                    else siguienteRondaVal = 'Final';
                 }
 
                 const card = document.createElement('div');
@@ -309,9 +321,9 @@
                             <h4 style="margin:0 0 4px 0; font-size:1.1em; color:#fff;">📅 ${ev.nombre_torneo}</h4>
                             <span style="font-size:0.85em; color:#aaa;">📍 ${ev.lugar || 'Por definir'} | 🗓️ ${ev.fecha_evento} (${ev.formato})</span>
                         </div>
-                        <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                             <span style="font-size:0.8em; color:#ccc;">Suiza: 
-                                <select id="cfg-rondas-${ev.id}" onchange="guardarConfigTorneo(${ev.id})" style="padding:4px; font-size:0.85em; width:55px; display:inline-block;">
+                                <select id="cfg-rondas-${ev.id}" onchange="guardarConfigTorneo(${ev.id})" style="padding:4px; font-size:0.85em; width:50px; display:inline-block;">
                                     <option value="3" ${configTorneo.totalRondas == 3 ? 'selected' : ''}>3</option>
                                     <option value="4" ${configTorneo.totalRondas == 4 ? 'selected' : ''}>4</option>
                                     <option value="5" ${configTorneo.totalRondas == 5 ? 'selected' : ''}>5</option>
@@ -320,11 +332,12 @@
                                     <option value="8" ${configTorneo.totalRondas == 8 ? 'selected' : ''}>8</option>
                                 </select>
                             </span>
-                            <span style="font-size:0.8em; color:#ccc;">Top: 
-                                <select id="cfg-top-${ev.id}" onchange="guardarConfigTorneo(${ev.id})" style="padding:4px; font-size:0.85em; width:85px; display:inline-block;">
+                            <span style="font-size:0.8em; color:#ccc;">Corte: 
+                                <select id="cfg-top-${ev.id}" onchange="guardarConfigTorneo(${ev.id})" style="padding:4px; font-size:0.85em; width:95px; display:inline-block;">
                                     <option value="Ninguno" ${configTorneo.topCut === 'Ninguno' ? 'selected' : ''}>Ninguno</option>
-                                    <option value="Top 4" ${configTorneo.topCut === 'Top 4' ? 'selected' : ''}>Top 4</option>
                                     <option value="Top 8" ${configTorneo.topCut === 'Top 8' ? 'selected' : ''}>Top 8</option>
+                                    <option value="Top 4" ${configTorneo.topCut === 'Top 4' ? 'selected' : ''}>Top 4</option>
+                                    <option value="Final" ${configTorneo.topCut === 'Final' ? 'selected' : ''}>Final</option>
                                 </select>
                             </span>
                             <span class="badge-live">${numRondasRegistradas} Hechas</span>
@@ -357,7 +370,6 @@
                     </div>
                 `;
                 
-                // Preseleccionar automáticamente la siguiente ronda inteligente
                 contenedor.appendChild(card);
                 const selectRondaEl = document.getElementById(`live-ronda-${ev.id}`);
                 if (selectRondaEl) {
@@ -373,7 +385,6 @@
             configuracionTorneosLocal[idEvento] = { totalRondas: parseInt(totalRondas), topCut: topCut };
             localStorage.setItem('config_torneos_live', JSON.stringify(configuracionTorneosLocal));
             
-            // Recargar los torneos live para actualizar los selectores de rondas al instante
             cargarTorneosLive();
         }
 
