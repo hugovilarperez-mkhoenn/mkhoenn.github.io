@@ -49,6 +49,20 @@
         .palmares-card { background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #333; text-align: center; }
         .palmares-card h4 { margin: 0 0 5px 0; color: #e3350d; }
         .palmares-card span { font-size: 1.5em; font-weight: bold; color: #fff; }
+
+        /* Acordeón de Torneos en Palmarés */
+        .torneo-historico-item { background: #2a2a2a; border: 1px solid #333; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+        .torneo-historico-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #252525; }
+        .torneo-historico-header:hover { background: #2f2f2f; }
+        .torneo-historico-body { padding: 15px; border-top: 1px solid #333; display: none; background: #1e1e1e; }
+        .torneo-historico-body.open { display: block; }
+        
+        .ronda-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #2a2a2a; font-size: 0.9em; }
+        .ronda-row:last-child { border-bottom: none; }
+        .badge-resultado { padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
+        .badge-Victoria { background: rgba(77, 255, 77, 0.2); color: #4dff4d; border: 1px solid #4dff4d; }
+        .badge-Derrota { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; border: 1px solid #ff4d4d; }
+        .badge-Empate { background: rgba(255, 204, 0, 0.2); color: #ffcc00; border: 1px solid #ffcc00; }
     </style>
 </head>
 <body>
@@ -107,6 +121,11 @@
                         <span id="stat-winrate">0%</span>
                     </div>
                 </div>
+
+                <h3 style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">Historial de Torneos y Desglose</h3>
+                <div id="contenedor-palmares-torneos">
+                    <p style="color:#aaa;">Cargando historial de torneos...</p>
+                </div>
             </div>
         </div>
 
@@ -158,12 +177,9 @@
                 cargarTorneosLive();
                 cargarDatalistMazos();
 
-                // Detección automática de la subpestaña live por URL
                 if (window.location.hash === '#live') {
                     const btnLive = document.querySelectorAll('.tab-btn')[1];
-                    if (btnLive) {
-                        cambiarPestana('live', { currentTarget: btnLive });
-                    }
+                    if (btnLive) cambiarPestana('live', { currentTarget: btnLive });
                 }
             }
         }
@@ -210,6 +226,8 @@
             if (asistencias) {
                 document.getElementById('stat-torneos-jugados').innerText = asistencias.length;
             }
+
+            cargarPalmaresTorneos(partidas || []);
         }
 
         async function cargarDatalistMazos() {
@@ -253,9 +271,24 @@
                 return;
             }
 
+            // Cargar partidas del usuario para calcular la ronda actual automáticamente
+            const { data: partidasUsuario } = await supabaseClient
+                .from('matchups')
+                .select('*')
+                .eq('id_jugador', usuarioActual.id);
+
             contenedor.innerHTML = "";
             eventos.forEach(ev => {
                 const mazoPropio = mapaMazos[ev.id] || '';
+                
+                // Filtrar partidas asociadas a este torneo (identificadas por la nota del torneo o evento ID)
+                const partidasTorneo = (partidasUsuario || []).filter(p => p.notas && p.notas.includes(`[Torneo ID: ${ev.id}]`));
+                const numRondasRegistradas = partidasTorneo.length;
+                
+                // Calcular la siguiente ronda automáticamente
+                let siguienteRonda = `Ronda ${numRondasRegistradas + 1}`;
+                if (numRondasRegistradas >= 6) siguienteRonda = "Top Cut";
+
                 const card = document.createElement('div');
                 card.className = 'live-tournament-card';
                 card.innerHTML = `
@@ -264,7 +297,7 @@
                             <h4 style="margin:0 0 4px 0; font-size:1.1em; color:#fff;">📅 ${ev.nombre_torneo}</h4>
                             <span style="font-size:0.85em; color:#aaa;">📍 ${ev.lugar || 'Por definir'} | 🗓️ ${ev.fecha_evento} (${ev.formato})</span>
                         </div>
-                        <span class="badge-live">Modo Live Activo</span>
+                        <span class="badge-live">${numRondasRegistradas} Rondas registradas</span>
                     </div>
                     <div style="background:#1e1e1e; padding:15px; border-radius:6px; margin-top:10px;">
                         <p style="margin:0 0 10px 0; font-size:0.9em; font-weight:bold; color:#ccc;">Tu mazo registrado: <span style="color:#e3350d;">${mazoPropio || 'Sin mazo definido'}</span></p>
@@ -272,13 +305,13 @@
                         <div style="display: flex; flex-direction: column; gap: 8px;">
                             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                 <select id="live-ronda-${ev.id}" style="padding: 8px; font-size:0.85em; flex:1; min-width:110px;">
-                                    <option value="Ronda 1">Ronda 1</option>
-                                    <option value="Ronda 2">Ronda 2</option>
-                                    <option value="Ronda 3">Ronda 3</option>
-                                    <option value="Ronda 4">Ronda 4</option>
-                                    <option value="Ronda 5">Ronda 5</option>
-                                    <option value="Ronda 6">Ronda 6</option>
-                                    <option value="Top Cut">Top Cut</option>
+                                    <option value="Ronda 1" ${siguienteRonda === 'Ronda 1' ? 'selected' : ''}>Ronda 1</option>
+                                    <option value="Ronda 2" ${siguienteRonda === 'Ronda 2' ? 'selected' : ''}>Ronda 2</option>
+                                    <option value="Ronda 3" ${siguienteRonda === 'Ronda 3' ? 'selected' : ''}>Ronda 3</option>
+                                    <option value="Ronda 4" ${siguienteRonda === 'Ronda 4' ? 'selected' : ''}>Ronda 4</option>
+                                    <option value="Ronda 5" ${siguienteRonda === 'Ronda 5' ? 'selected' : ''}>Ronda 5</option>
+                                    <option value="Ronda 6" ${siguienteRonda === 'Ronda 6' ? 'selected' : ''}>Ronda 6</option>
+                                    <option value="Top Cut" ${siguienteRonda === 'Top Cut' ? 'selected' : ''}>Top Cut</option>
                                 </select>
                                 <select id="live-resultado-${ev.id}" style="padding: 8px; font-size:0.85em; flex:1; min-width:110px;">
                                     <option value="Victoria">Victoria</option>
@@ -318,6 +351,9 @@
                 return;
             }
 
+            // Guardamos el ID del evento dentro de las notas para asociarlo limpiamente al historial del torneo
+            const notaFinal = `[Torneo ID: ${idEvento}] ${notas}`.trim();
+
             const { error } = await supabaseClient.from('matchups').insert([{
                 id_jugador: usuarioActual.id,
                 tu_baraja: mazoPropio,
@@ -326,17 +362,101 @@
                 empiezas_tu: empiezaTu,
                 formato: formatoTorneo || 'Bo1',
                 ronda_suiza: ronda,
-                notas: notas ? `[Torneo Live] ${notas}` : '[Torneo Live]'
+                notas: notaFinal
             }]);
 
             if (error) {
                 alert("Error al registrar la ronda.");
             } else {
-                alert(`¡${ronda} registrada con éxito! Ya se ha sumado a tu palmarés y al metajuego global.`);
+                alert(`¡${ronda} registrada con éxito!`);
                 document.getElementById(`live-rival-${idEvento}`).value = '';
                 document.getElementById(`live-notas-${idEvento}`).value = '';
                 cargarDatosPerfil();
+                cargarTorneosLive(); // Recarga para actualizar automáticamente el selector a la siguiente ronda
             }
+        }
+
+        async function cargarPalmaresTorneos(partidas) {
+            const contenedor = document.getElementById('contenedor-palmares-torneos');
+            
+            // Buscar los torneos a los que asistió o tiene registradas partidas
+            const { data: asistencias } = await supabaseClient
+                .from('asistencias')
+                .select('id_evento')
+                .eq('id_jugador', usuarioActual.id);
+
+            if (!asistencias || asistencias.length === 0) {
+                contenedor.innerHTML = "<p style='color:#aaa;'>No hay torneos registrados en tu palmarés todavía.</p>";
+                return;
+            }
+
+            const idsEventos = asistencias.map(a => a.id_evento);
+            const { data: eventos } = await supabaseClient
+                .from('eventos')
+                .select('*')
+                .in('id', idsEventos)
+                .order('fecha_evento', { ascending: false });
+
+            if (!eventos || eventos.length === 0) {
+                contenedor.innerHTML = "<p style='color:#aaa;'>No hay torneos disponibles.</p>";
+                return;
+            }
+
+            contenedor.innerHTML = "";
+            eventos.forEach(ev => {
+                const partidasTorneo = partidas.filter(p => p.notas && p.notas.includes(`[Torneo ID: ${ev.id}]`));
+                if (partidasTorneo.length === 0) return; // Si no tiene rondas jugadas en este torneo, no lo mostramos en el palmarés
+
+                let v = 0, d = 0, t = 0;
+                partidasTorneo.forEach(p => {
+                    if (p.resultado === 'Victoria') v++;
+                    else if (p.resultado === 'Derrota') d++;
+                    else t++;
+                });
+
+                const item = document.createElement('div');
+                item.className = 'torneo-historico-item';
+                
+                let htmlRondas = "";
+                partidasTorneo.forEach(p => {
+                    const notasLimpias = p.notas.replace(`[Torneo ID: ${ev.id}]`, '').trim();
+                    htmlRondas += `
+                        <div class="ronda-row">
+                            <div>
+                                <strong style="color:#fff;">${p.ronda_suiza || 'Ronda'}</strong>: 
+                                <span style="color:#e3350d; font-weight:bold;">${p.tu_baraja}</span> vs <span style="color:#ccc;">${p.baraja_rival}</span>
+                                ${notasLimpias ? `<div style="font-size:0.8em; color:#888; margin-top:2px;">📝 ${notasLimpias}</div>` : ''}
+                            </div>
+                            <span class="badge-resultado badge-${p.resultado}">${p.resultado}</span>
+                        </div>
+                    `;
+                });
+
+                item.innerHTML = `
+                    <div class="torneo-historico-header" onclick="toggleAcordeon(this)">
+                        <div>
+                            <h4 style="margin:0; color:#fff; font-size:1.05em;">🏆 ${ev.nombre_torneo}</h4>
+                            <span style="font-size:0.8em; color:#aaa;">🗓️ ${ev.fecha_evento} | Récord: <strong style="color:#4dff4d">${v}V</strong> - <strong style="color:#ff4d4d">${d}D</strong> - <strong style="color:#ffcc00">${t}E</strong></span>
+                        </div>
+                        <span style="color:#aaa; font-size:1.2em;">▼</span>
+                    </div>
+                    <div class="torneo-historico-body">
+                        ${htmlRondas}
+                    </div>
+                `;
+                contenedor.appendChild(item);
+            });
+
+            if (contenedor.innerHTML === "") {
+                contenedor.innerHTML = "<p style='color:#aaa;'>Aún no has registrado ninguna ronda en tus torneos apuntados.</p>";
+            }
+        }
+
+        function toggleAcordeon(header) {
+            const body = header.nextElementSibling;
+            body.classList.toggle('open');
+            const arrow = header.querySelector('span:last-child');
+            arrow.innerText = body.classList.contains('open') ? '▲' : '▼';
         }
     </script>
 </body>
