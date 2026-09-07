@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel - Miembros del Equipo</title>
+    <title>Panel - Equipo y Metajuego</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -47,11 +47,10 @@
         .mazo-display { display: flex; align-items: center; gap: 8px; font-size: 1.1em; font-weight: bold; background-color: #1e1e1e; padding: 5px 12px; border-radius: 20px; }
         
         .sprites-wrapper { display: flex; align-items: center; margin-right: 5px; }
-        .pkmn-sprite { width: 40px; height: 40px; object-fit: contain; margin-left: -10px; background: rgba(255,255,255,0.05); border-radius: 50%; padding: 2px; }
+        .pkmn-sprite { width: 35px; height: 35px; object-fit: contain; margin-left: -8px; background: rgba(255,255,255,0.05); border-radius: 50%; padding: 2px; }
         .pkmn-sprite:first-child { margin-left: 0; }
         
         .vs-text { color: #aaa; font-weight: normal; font-size: 0.9em; font-style: italic; }
-        .badges { display: flex; gap: 8px; flex-wrap: wrap; }
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
         .badge-victoria { background-color: rgba(77, 255, 77, 0.2); color: #4dff4d; border: 1px solid #4dff4d; }
         .badge-derrota { background-color: rgba(255, 77, 77, 0.2); color: #ff4d4d; border: 1px solid #ff4d4d; }
@@ -60,8 +59,14 @@
         .badge-ronda { background-color: rgba(155, 89, 182, 0.2); color: #9b59b6; border: 1px solid #9b59b6; }
         .badge-formato { background-color: rgba(230, 126, 34, 0.2); color: #e67e22; border: 1px solid #e67e22; }
         .badge-secuencia { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; font-family: monospace; }
-        
         .notas { font-size: 0.85em; color: #ccc; background-color: #1e1e1e; padding: 10px; border-radius: 6px; margin: 0; border-left: 3px solid #555; }
+
+        /* Estilos específicos para la pestaña de Metajuego Global */
+        .tabs-equipo { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .tab-btn { background: #2a2a2a; border: none; color: #aaa; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.8em; }
+        .tab-btn.active { background: #e3350d; color: white; }
+        .meta-row { background-color: #2a2a2a; border: 1px solid #333; border-radius: 8px; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .meta-info { display: flex; align-items: center; gap: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -72,7 +77,7 @@
             <div class="nav-links">
                 <a href="dashboard.html" class="nav-link">📊 Mis Partidas</a>
                 <a href="torneos.html" class="nav-link">🏆 Torneos</a>
-                <a href="equipo.html" class="nav-link active">👥 Miembros</a>
+                <a href="equipo.html" class="nav-link active">👥 Miembros & Meta</a>
             </div>
         </div>
         <div class="sidebar-bottom">
@@ -82,15 +87,20 @@
     </div>
 
     <div class="main-content">
+        <!-- Panel Izquierdo: Lista de Miembros y Botón Global de Metajuego -->
         <div class="card" style="flex: 0.8;">
-            <h3 style="margin-top:0;">Compañeros de Equipo</h3>
+            <h3 style="margin-top:0;">Equipo</h3>
+            <button onclick="verMetajuegoGlobal()" style="width:100%; margin-bottom:20px; background-color:#333; border: 1px solid #555;">🌐 Ver Metajuego Global</button>
+            
+            <h4 style="color:#aaa; font-size:0.85em; text-transform:uppercase; margin-bottom:10px;">Compañeros:</h4>
             <div id="lista-miembros">
                 <p style="color: #aaa;">Cargando miembros...</p>
             </div>
         </div>
 
+        <!-- Panel Derecho: Estadísticas del Miembro Seleccionado o Metajuego Global -->
         <div class="card" style="flex: 1.5;">
-            <h3 id="titulo-perfil-miembro" style="margin-top:0;">Selecciona un miembro</h3>
+            <h3 id="titulo-panel-principal" style="margin-top:0;">Metajuego Global del Equipo</h3>
             
             <div class="winrate-container">
                 <div id="bar-w" class="bar-win" style="width: 0%;"></div>
@@ -103,12 +113,8 @@
                 <span id="stat-l" style="color:#ff4d4d">0% Derrotas</span>
             </div>
 
-            <h3 style="border-top: 1px solid #333; padding-top: 20px;">Desglose por Mazo</h3>
-            <div id="lista-stats-mazos" class="deck-stats-list"></div>
-
-            <h3 style="border-top: 1px solid #333; padding-top: 20px;">Historial de Partidas</h3>
-            <div id="lista-partidas-miembro">
-                <p style="color: #aaa;">Haz clic en un compañero a la izquierda para ver su actividad.</p>
+            <div id="contenedor-dinamico-contenido">
+                <!-- Aquí se cargará dinámicamente el contenido (Metajuego o Historial individual) -->
             </div>
         </div>
     </div>
@@ -121,7 +127,10 @@
         async function comprobarAutenticacion() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) { window.location.href = "index.html"; } 
-            else { cargarMiembros(); }
+            else { 
+                cargarMiembros();
+                verMetajuegoGlobal(); // Cargar la vista global por defecto al entrar
+            }
         }
         comprobarAutenticacion();
 
@@ -173,9 +182,7 @@
 
         async function cargarMiembros() {
             const contenedor = document.getElementById('lista-miembros');
-            const { data, error } = await supabaseClient
-                .from('matchups')
-                .select('id_jugador');
+            const { data, error } = await supabaseClient.from('matchups').select('id_jugador');
 
             if (error || !data) {
                 contenedor.innerHTML = "<p style='color:#ff4d4d;'>Error al cargar miembros.</p>";
@@ -183,21 +190,11 @@
             }
 
             const idsUnicos = [...new Set(data.map(item => item.id_jugador))];
-
-            if (idsUnicos.length === 0) {
-                contenedor.innerHTML = "<p style='color:#aaa;'>No hay miembros con partidas registradas.</p>";
-                return;
-            }
-
-            // Cargar perfiles de la base de datos para extraer nombres y avatares personalizados
             const { data: perfiles } = await supabaseClient.from('perfiles').select('*');
             const mapaPerfiles = {};
-            if (perfiles) {
-                perfiles.forEach(p => { mapaPerfiles[p.id] = p; });
-            }
+            if (perfiles) perfiles.forEach(p => { mapaPerfiles[p.id] = p; });
 
             contenedor.innerHTML = "";
-
             idsUnicos.forEach((idJugador, index) => {
                 const perfil = mapaPerfiles[idJugador];
                 const nombreMostrar = perfil && perfil.nombre_usuario ? perfil.nombre_usuario : `Jugador #${index + 1}`;
@@ -206,23 +203,84 @@
                 const card = document.createElement('div');
                 card.className = 'miembro-card';
                 card.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                        ${avatarUrl ? `<img src="${avatarUrl}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border: 2px solid #e3350d;">` : `<div style="width:40px; height:40px; border-radius:50%; background:#333; display:flex; align-items:center; justify-content:center; border: 2px solid #555;">👤</div>`}
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        ${avatarUrl ? `<img src="${avatarUrl}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border: 2px solid #e3350d;">` : `<div style="width:35px; height:35px; border-radius:50%; background:#333; display:flex; align-items:center; justify-content:center; border: 2px solid #555;">👤</div>`}
                         <div class="miembro-info">
-                            <h4>${nombreMostrar}</h4>
-                            <p style="font-family:monospace; font-size:0.75em; color:#777;">ID: ${idJugador.substring(0, 8)}...</p>
+                            <h4 style="font-size:0.95em;">${nombreMostrar}</h4>
                         </div>
                     </div>
-                    <button onclick="verEstadisticasMiembro('${idJugador}', '${nombreMostrar}')">Ver Stats</button>
+                    <button onclick="verEstadisticasMiembro('${idJugador}', '${nombreMostrar}')">Ver</button>
                 `;
                 contenedor.appendChild(card);
             });
         }
 
+        async function verMetajuegoGlobal() {
+            document.getElementById('titulo-panel-principal').innerText = "Metajuego Global del Equipo";
+            const contenedor = document.getElementById('contenedor-dinamico-contenido');
+            contenedor.innerHTML = "<p style='color:#aaa;'>Calculando estadísticas globales...</p>";
+
+            const { data: todasPartidas, error } = await supabaseClient.from('matchups').select('*');
+
+            if (error || !todasPartidas) {
+                contenedor.innerHTML = "<p style='color:#ff4d4d;'>Error al cargar el metajuego global.</p>";
+                return;
+            }
+
+            actualizarEstadisticas(todasPartidas);
+
+            if (todasPartidas.length === 0) {
+                contenedor.innerHTML = "<p style='color:#aaa;'>No hay partidas registradas en el equipo todavía.</p>";
+                return;
+            }
+
+            // Agrupar por mazo rival
+            const metaRival = {};
+            todasPartidas.forEach(p => {
+                const rival = p.baraja_rival ? p.baraja_rival.trim() : "Desconocido";
+                if (!metaRival[rival]) {
+                    metaRival[rival] = { w: 0, l: 0, t: 0, total: 0 };
+                }
+                metaRival[rival].total++;
+                if (p.resultado === "Victoria") metaRival[rival].w++;
+                if (p.resultado === "Derrota") metaRival[rival].l++;
+                if (p.resultado === "Empate") metaRival[rival].t++;
+            });
+
+            // Ordenar por los más jugados
+            const arrayMeta = Object.entries(metaRival).sort((a, b) => b[1].total - a[1].total);
+
+            let html = `<h3 style="border-top: 1px solid #333; padding-top: 15px; margin-bottom: 15px; font-size:1em; color:#aaa; text-transform:uppercase;">Rendimiento del equipo contra arquetipos rivales:</h3>`;
+            
+            arrayMeta.forEach(([mazoRival, stats]) => {
+                const spritesHtml = generarSpritesHtml(mazoRival);
+                const winRate = Math.round((stats.w / stats.total) * 100);
+                let colorWr = "#4dff4d";
+                if (winRate < 45) colorWr = "#ff4d4d";
+                else if (winRate < 55) colorWr = "#ffcc00";
+
+                html += `
+                    <div class="meta-row">
+                        <div class="meta-info">
+                            <div class="sprites-wrapper">${spritesHtml}</div>
+                            <span>${mazoRival}</span>
+                            <span style="font-size:0.75em; color:#777; font-weight:normal; margin-left:5px;">(${stats.total} partidas)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <span style="font-weight:bold; color:${colorWr};">${winRate}% WR</span>
+                            <span style="font-family:monospace; font-size:0.95em; color:#ccc;">${stats.w}V - ${stats.l}D - ${stats.t}E</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            contenedor.innerHTML = html;
+        }
+
         async function verEstadisticasMiembro(idJugador, nombreJugador) {
-            document.getElementById('titulo-perfil-miembro').innerText = `Estadísticas de ${nombreJugador}`;
-            const contenedorPartidas = document.getElementById('lista-partidas-miembro');
-            contenedorPartidas.innerHTML = "<p style='color:#aaa;'>Cargando partidas...</p>";
+            document.getElementById('titulo-panel-principal').innerText = `Estadísticas de ${nombreJugador}`;
+            const contenedor = document.getElementById('contenedor-dinamico-contenido');
+            contenedor.innerHTML = "<p style='color:#aaa;'>Cargando partidas...</p>";
 
             const { data, error } = await supabaseClient
                 .from('matchups')
@@ -231,23 +289,41 @@
                 .order('creado_en', { ascending: false });
 
             if (error) {
-                contenedorPartidas.innerHTML = "<p style='color:#ff4d4d;'>Error al cargar datos.</p>";
+                contenedor.innerHTML = "<p style='color:#ff4d4d;'>Error al cargar datos.</p>";
                 return;
             }
 
             actualizarEstadisticas(data);
-            actualizarEstadisticasPorMazo(data);
 
             if (data.length === 0) {
-                contenedorPartidas.innerHTML = "<p style='color:#aaa;'>Este miembro aún no tiene partidas.</p>";
+                contenedor.innerHTML = "<p style='color:#aaa;'>Este miembro aún no tiene partidas.</p>";
                 return;
             }
 
-            contenedorPartidas.innerHTML = "";
+            let html = `<h3 style="border-top: 1px solid #333; padding-top: 15px; margin-bottom: 15px; font-size:1em; color:#aaa; text-transform:uppercase;">Desglose por Mazo del Jugador:</h3><div class="deck-stats-list">`;
+            
+            const statsMazos = {};
+            data.forEach(p => {
+                if (!statsMazos[p.tu_baraja]) statsMazos[p.tu_baraja] = { w: 0, l: 0, t: 0, jugadas: 0 };
+                statsMazos[p.tu_baraja].jugadas++;
+                if(p.resultado === "Victoria") statsMazos[p.tu_baraja].w++;
+                if(p.resultado === "Derrota") statsMazos[p.tu_baraja].l++;
+                if(p.resultado === "Empate") statsMazos[p.tu_baraja].t++;
+            });
+
+            Object.entries(statsMazos).sort((a, b) => b[1].jugadas - a[1].jugadas).forEach(([mazo, st]) => {
+                html += `
+                    <div class="deck-stat-item">
+                        <div class="deck-stat-info"><div class="sprites-wrapper">${generarSpritesHtml(mazo)}</div> <span>${mazo}</span></div>
+                        <div class="deck-stat-record">${st.w}V - ${st.l}D - ${st.t}E</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+
+            html += `<h3 style="border-top: 1px solid #333; padding-top: 15px; margin-bottom: 15px; font-size:1em; color:#aaa; text-transform:uppercase;">Historial de Partidas:</h3>`;
+            
             data.forEach(partida => {
-                const item = document.createElement('div');
-                item.className = 'matchup-item';
-                
                 let claseResultado = `badge-${partida.resultado.toLowerCase()}`;
                 const ordenTurno = partida.empiezas_tu ? 'Fui 1º' : 'Fui 2º';
                 let htmlRonda = partida.ronda_suiza ? `<span class="badge badge-ronda">🏆 ${partida.ronda_suiza}</span>` : '';
@@ -256,27 +332,27 @@
                     ? `<span class="badge badge-secuencia">Bo3: ${partida.secuencia_bo3}</span>` 
                     : `<span class="badge badge-formato">Bo1</span>`;
 
-                const htmlSpritesTu = generarSpritesHtml(partida.tu_baraja);
-                const htmlSpritesRival = generarSpritesHtml(partida.baraja_rival);
-
-                item.innerHTML = `
-                    <div class="matchup-header">
-                        <div class="mazos-container">
-                            <div class="mazo-display"><div class="sprites-wrapper">${htmlSpritesTu}</div> <span>${partida.tu_baraja}</span></div>
-                            <span class="vs-text">VS</span>
-                            <div class="mazo-display"><div class="sprites-wrapper">${htmlSpritesRival}</div> <span>${partida.baraja_rival}</span></div>
+                html += `
+                    <div class="matchup-item">
+                        <div class="matchup-header">
+                            <div class="mazos-container">
+                                <div class="mazo-display"><div class="sprites-wrapper">${generarSpritesHtml(partida.tu_baraja)}</div> <span>${partida.tu_baraja}</span></div>
+                                <span class="vs-text">VS</span>
+                                <div class="mazo-display"><div class="sprites-wrapper">${generarSpritesHtml(partida.baraja_rival)}</div> <span>${partida.baraja_rival}</span></div>
+                            </div>
                         </div>
+                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                            <span class="badge ${claseResultado}">${partida.resultado}</span>
+                            ${htmlFormato}
+                            <span class="badge badge-turno">⏱️ ${ordenTurno}</span>
+                            ${htmlRonda}
+                        </div>
+                        ${htmlNotas}
                     </div>
-                    <div class="badges">
-                        <span class="badge ${claseResultado}">${partida.resultado}</span>
-                        ${htmlFormato}
-                        <span class="badge badge-turno">⏱️ ${ordenTurno}</span>
-                        ${htmlRonda}
-                    </div>
-                    ${htmlNotas}
                 `;
-                contenedorPartidas.appendChild(item);
             });
+
+            contenedor.innerHTML = html;
         }
 
         function actualizarEstadisticas(partidas) {
@@ -298,46 +374,6 @@
             document.getElementById('stat-w').innerText = `${pw}% Victorias (${w})`;
             document.getElementById('stat-t').innerText = `${pt}% Empates (${t})`;
             document.getElementById('stat-l').innerText = `${pl}% Derrotas (${l})`;
-        }
-
-        function actualizarEstadisticasPorMazo(partidas) {
-            const contenedorMazos = document.getElementById('lista-stats-mazos');
-            contenedorMazos.innerHTML = "";
-
-            if (partidas.length === 0) {
-                contenedorMazos.innerHTML = "<p style='color:#aaa; margin:0;'>Sin datos suficientes.</p>";
-                return;
-            }
-
-            const statsMazos = {};
-            partidas.forEach(p => {
-                if (!statsMazos[p.tu_baraja]) {
-                    statsMazos[p.tu_baraja] = { w: 0, l: 0, t: 0, jugadas: 0 };
-                }
-                statsMazos[p.tu_baraja].jugadas++;
-                if(p.resultado === "Victoria") statsMazos[p.tu_baraja].w++;
-                if(p.resultado === "Derrota") statsMazos[p.tu_baraja].l++;
-                if(p.resultado === "Empate") statsMazos[p.tu_baraja].t++;
-            });
-
-            const arrayStats = Object.entries(statsMazos).sort((a, b) => b[1].jugadas - a[1].jugadas);
-
-            arrayStats.forEach(([nombreMazo, stats]) => {
-                const spritesHtml = generarSpritesHtml(nombreMazo);
-                const item = document.createElement('div');
-                item.className = 'deck-stat-item';
-                item.innerHTML = `
-                    <div class="deck-stat-info">
-                        <div class="sprites-wrapper">${spritesHtml}</div> <span>${nombreMazo}</span>
-                    </div>
-                    <div class="deck-stat-record">
-                        <span class="record-w">${stats.w}V</span> - 
-                        <span class="record-l">${stats.l}D</span> - 
-                        <span class="record-t">${stats.t}E</span>
-                    </div>
-                `;
-                contenedorMazos.appendChild(item);
-            });
         }
     </script>
 </body>
