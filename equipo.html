@@ -23,7 +23,6 @@
         .miembro-card { background-color: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; transition: border-color 0.2s; }
         .miembro-card:hover { border-color: #e3350d; }
         .miembro-info h4 { margin: 0; color: #fff; font-size: 1.1em; }
-        .miembro-info p { margin: 4px 0 0 0; color: #aaa; font-size: 0.85em; }
         
         button { padding: 8px 15px; background-color: #e3350d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85em; transition: background-color 0.2s; }
         button:hover { background-color: #b32a0a; }
@@ -61,10 +60,6 @@
         .badge-secuencia { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; font-family: monospace; }
         .notas { font-size: 0.85em; color: #ccc; background-color: #1e1e1e; padding: 10px; border-radius: 6px; margin: 0; border-left: 3px solid #555; }
 
-        /* Estilos específicos para la pestaña de Metajuego Global */
-        .tabs-equipo { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .tab-btn { background: #2a2a2a; border: none; color: #aaa; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.8em; }
-        .tab-btn.active { background: #e3350d; color: white; }
         .meta-row { background-color: #2a2a2a; border: 1px solid #333; border-radius: 8px; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .meta-info { display: flex; align-items: center; gap: 10px; font-weight: bold; }
     </style>
@@ -75,19 +70,19 @@
         <div class="sidebar-top">
             <h2>Panel TCG</h2>
             <div class="nav-links">
-                <a href="dashboard.html" class="nav-link">📊 Mis Partidas</a>
+                <a href="dashboard.html" class="nav-link">📊 Partidas</a>
                 <a href="torneos.html" class="nav-link">🏆 Torneos</a>
                 <a href="equipo.html" class="nav-link active">👥 Miembros & Meta</a>
+                <a href="perfil.html" class="nav-link">👤 Mi Perfil</a>
             </div>
         </div>
         <div class="sidebar-bottom">
-            <a href="perfil.html" class="nav-link" style="padding: 10px 15px; background-color: #2a2a2a; border-radius: 6px; color: white; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px;">⚙️ Mi Perfil</a>
+            <a href="configuracion.html" class="nav-link" style="padding: 10px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px;">⚙️ Configuración</a>
             <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
         </div>
     </div>
 
     <div class="main-content">
-        <!-- Panel Izquierdo: Lista de Miembros y Botón Global de Metajuego -->
         <div class="card" style="flex: 0.8;">
             <h3 style="margin-top:0;">Equipo</h3>
             <button onclick="verMetajuegoGlobal()" style="width:100%; margin-bottom:20px; background-color:#333; border: 1px solid #555;">🌐 Ver Metajuego Global</button>
@@ -98,7 +93,6 @@
             </div>
         </div>
 
-        <!-- Panel Derecho: Estadísticas del Miembro Seleccionado o Metajuego Global -->
         <div class="card" style="flex: 1.5;">
             <h3 id="titulo-panel-principal" style="margin-top:0;">Metajuego Global del Equipo</h3>
             
@@ -113,9 +107,7 @@
                 <span id="stat-l" style="color:#ff4d4d">0% Derrotas</span>
             </div>
 
-            <div id="contenedor-dinamico-contenido">
-                <!-- Aquí se cargará dinámicamente el contenido (Metajuego o Historial individual) -->
-            </div>
+            <div id="contenedor-dinamico-contenido"></div>
         </div>
     </div>
 
@@ -129,7 +121,7 @@
             if (!user) { window.location.href = "index.html"; } 
             else { 
                 cargarMiembros();
-                verMetajuegoGlobal(); // Cargar la vista global por defecto al entrar
+                verMetajuegoGlobal();
             }
         }
         comprobarAutenticacion();
@@ -234,22 +226,17 @@
                 return;
             }
 
-            // Agrupar por mazo rival
             const metaRival = {};
             todasPartidas.forEach(p => {
                 const rival = p.baraja_rival ? p.baraja_rival.trim() : "Desconocido";
-                if (!metaRival[rival]) {
-                    metaRival[rival] = { w: 0, l: 0, t: 0, total: 0 };
-                }
+                if (!metaRival[rival]) metaRival[rival] = { w: 0, l: 0, t: 0, total: 0 };
                 metaRival[rival].total++;
                 if (p.resultado === "Victoria") metaRival[rival].w++;
                 if (p.resultado === "Derrota") metaRival[rival].l++;
                 if (p.resultado === "Empate") metaRival[rival].t++;
             });
 
-            // Ordenar por los más jugados
             const arrayMeta = Object.entries(metaRival).sort((a, b) => b[1].total - a[1].total);
-
             let html = `<h3 style="border-top: 1px solid #333; padding-top: 15px; margin-bottom: 15px; font-size:1em; color:#aaa; text-transform:uppercase;">Rendimiento del equipo contra arquetipos rivales:</h3>`;
             
             arrayMeta.forEach(([mazoRival, stats]) => {
