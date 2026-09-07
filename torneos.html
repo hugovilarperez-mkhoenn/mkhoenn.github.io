@@ -418,10 +418,7 @@
         async function borrarTorneo(idEvento) {
             if (!confirm("¿Estás seguro de que quieres eliminar este torneo? Se borrarán también las asistencias asociadas.")) return;
 
-            // Primero borramos las asistencias de ese evento para evitar conflictos de llave foránea
             await supabaseClient.from('asistencias').delete().eq('id_evento', idEvento);
-
-            // Luego borramos el evento
             const { error } = await supabaseClient.from('eventos').delete().eq('id', idEvento);
 
             if (!error) {
