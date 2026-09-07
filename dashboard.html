@@ -8,7 +8,6 @@
     <style>
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Sidebar Adaptativa */
         .sidebar { width: 240px; background-color: #1a1a1a; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #2a2a2a; transition: transform 0.3s ease; z-index: 1000; }
         .sidebar-top { padding: 20px; }
         .sidebar h2 { font-size: 1.1em; color: #e3350d; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
@@ -18,7 +17,6 @@
         .nav-link.active { background-color: #e3350d; color: white; }
         .sidebar-bottom { padding: 20px; border-top: 1px solid #2a2a2a; display: flex; flex-direction: column; gap: 8px; }
 
-        /* Botón hamburguesa para móviles */
         .mobile-header { display: none; background: #1a1a1a; padding: 15px; border-bottom: 1px solid #2a2a2a; align-items: center; justify-content: space-between; }
         .hamburger-btn { background: none; border: none; color: white; font-size: 1.5em; cursor: pointer; }
         .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 999; }
@@ -82,32 +80,27 @@
 
         .bo3-game-box { background: #252525; padding: 12px; border-radius: 6px; margin-top: 8px; border: 1px solid #333; }
 
-        /* Media Queries para Móviles */
         @media (max-width: 768px) {
             body { flex-direction: column; overflow: auto; height: auto; }
             .sidebar { position: fixed; top: 0; left: -240px; height: 100%; width: 240px; }
             .sidebar.open { transform: translateX(240px); }
-            .mobile-header { display: flex; }
+            .mobile-header { display: flex !important; }
             .sidebar-overlay.open { display: block; }
-            .main-content { padding: 15px; height: auto; }
+            .main-content { padding: 15px; height: auto; margin-top: 60px !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Cabecera Móvil con Botón Hamburguesa -->
     <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-    <div class="mobile-header" style="width: 100%; position: fixed; top: 0; z-index: 99;">
-        <span style="font-weight: bold; color: #e3350d; font-size: 1.1em;">PANEL TCG</span>
-        <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+    <div class="mobile-header" style="display: none; position: fixed; top: 0; left: 0; width: 100%; background: #1a1a1a; padding: 12px 20px; border-bottom: 1px solid #2a2a2a; align-items: center; justify-content: space-between; z-index: 99;">
+        <span style="font-weight: bold; color: #e3350d; font-size: 1.1em; letter-spacing: 1px;">PANEL TCG</span>
+        <button class="hamburger-btn" onclick="toggleSidebar()" style="background: none; border: none; color: white; font-size: 1.5em; cursor: pointer;">☰</button>
     </div>
 
     <div class="sidebar" id="sidebar">
         <div class="sidebar-top">
-            <h2 style="display: flex; justify-content: space-between; align-items: center;">
-                Panel TCG
-                <button onclick="toggleSidebar()" style="background:none; border:none; color:#aaa; font-size:1em; display:none; cursor:pointer;" class="close-sidebar">✕</button>
-            </h2>
+            <h2>Panel TCG</h2>
             <div class="nav-links">
                 <a href="dashboard.html" class="nav-link active">📊 Partidas</a>
                 <a href="torneos.html" class="nav-link">🏆 Torneos</a>
@@ -123,7 +116,7 @@
 
     <datalist id="lista-mazos-meta"></datalist>
 
-    <div class="main-content" style="margin-top: 50px;">
+    <div class="main-content">
         <div class="card" style="flex: 0.9;">
             <h3 style="margin-top:0;">Registrar Partida</h3>
             <form id="formMatchup">
@@ -303,7 +296,6 @@
             "Ursaluna Lunatone", "Azumarill", "Archaludon"
         ];
 
-        // Diccionario extendido para mapear arquetipos comunes y asegurar que los sprites aparezcan siempre
         const diccionarioArquetipos = {
             "raging bolt ogerpon": ["ragingbolt", "ogerpon"],
             "raging bolt": ["ragingbolt"],
