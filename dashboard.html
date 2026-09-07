@@ -24,10 +24,22 @@
         input, select, textarea { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; box-sizing: border-box; background-color: #2a2a2a; color: white; font-family: inherit; transition: border-color 0.3s; }
         input:focus, select:focus, textarea:focus { outline: none; border-color: #e3350d; }
         
-        button { width: 100%; padding: 12px; background-color: #e3350d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; transition: background-color 0.2s; }
-        button:hover { background-color: #b32a0a; }
+        button[type="submit"] { width: 100%; padding: 12px; background-color: #e3350d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; transition: background-color 0.2s; }
+        button[type="submit"]:hover { background-color: #b32a0a; }
         .btn-logout { width: 100%; background-color: #333; padding: 10px; font-size: 0.85em; border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; }
         .btn-logout:hover { background-color: #444; }
+
+        /* Estilos de Botones Minimalistas W/L/T y Turnos */
+        .btn-group { display: flex; gap: 6px; margin-top: 5px; }
+        .mini-btn { flex: 1; padding: 8px; background: #2a2a2a; border: 1px solid #333; color: #aaa; font-weight: bold; border-radius: 6px; cursor: pointer; text-align: center; font-size: 0.85em; transition: all 0.2s; }
+        .mini-btn:hover { background: #333; color: white; }
+        
+        /* Estados activos para botones minimalistas */
+        .mini-btn.active-w { background: rgba(77, 255, 77, 0.2); border-color: #4dff4d; color: #4dff4d; }
+        .mini-btn.active-l { background: rgba(255, 77, 77, 0.2); border-color: #ff4d4d; color: #ff4d4d; }
+        .mini-btn.active-t { background: rgba(255, 204, 0, 0.2); border-color: #ffcc00; color: #ffcc00; }
+        .mini-btn.active-turn { background: rgba(52, 152, 219, 0.2); border-color: #3498db; color: #3498db; }
+        .mini-btn.active-none { background: #333; border-color: #555; color: #fff; }
 
         .winrate-container { width: 100%; background-color: #2a2a2a; border-radius: 8px; height: 12px; display: flex; overflow: hidden; margin-bottom: 10px; }
         .bar-win { background-color: #4dff4d; transition: width 0.5s; }
@@ -64,7 +76,7 @@
         .icon-btn-delete { background: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.3); font-size: 1.1em; cursor: pointer; padding: 6px 10px; border-radius: 6px; margin: 0; width: auto; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
         .icon-btn-delete:hover { background: rgba(255, 77, 77, 0.3); transform: scale(1.05); }
 
-        .bo3-game-box { background: #252525; padding: 10px; border-radius: 6px; margin-top: 5px; border: 1px solid #333; }
+        .bo3-game-box { background: #252525; padding: 12px; border-radius: 6px; margin-top: 8px; border: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -103,72 +115,98 @@
                     <option value="Bo3">Al Mejor de 3 (Bo3)</option>
                 </select>
 
-                <!-- Bloque exclusivo para Bo1 -->
+                <!-- Bloque Bo1 (Minimalista con Botones) -->
                 <div id="bloque-bo1">
-                    <label for="resultado-bo1">Resultado</label>
-                    <select id="resultado-bo1">
-                        <option value="Victoria">Victoria</option>
-                        <option value="Derrota">Derrota</option>
-                        <option value="Empate">Empate</option>
-                    </select>
+                    <label>Resultado</label>
+                    <div class="btn-group" id="group-res-bo1">
+                        <button type="button" class="mini-btn active-w" onclick="seleccionarBoton('res-bo1', 'Victoria', this)">Victoria (W)</button>
+                        <button type="button" class="mini-btn" onclick="seleccionarBoton('res-bo1', 'Derrota', this)">Derrota (L)</button>
+                        <button type="button" class="mini-btn" onclick="seleccionarBoton('res-bo1', 'Empate', this)">Empate (T)</button>
+                    </div>
+                    <input type="hidden" id="input-res-bo1" value="Victoria">
 
-                    <label for="empiezas_tu-bo1">Orden de Turno</label>
-                    <select id="empiezas_tu-bo1">
-                        <option value="true">Empiezo yo (1º)</option>
-                        <option value="false">Empieza el rival (2º)</option>
-                    </select>
+                    <label>Orden de Turno</label>
+                    <div class="btn-group" id="group-turno-bo1">
+                        <button type="button" class="mini-btn active-turn" onclick="seleccionarBoton('turno-bo1', 'true', this)">Empiezo (1º)</button>
+                        <button type="button" class="mini-btn" onclick="seleccionarBoton('turno-bo1', 'false', this)">Segundo (2º)</button>
+                    </div>
+                    <input type="hidden" id="input-turno-bo1" value="true">
                 </div>
 
-                <!-- Bloque exclusivo para Bo3 (Visual por partidas) -->
+                <!-- Bloque Bo3 (Minimalista con Botones por Partida) -->
                 <div id="bloque-bo3" style="display:none;">
                     <label style="color:#e3350d; margin-top:15px;">Desglose de Partidas (Bo3)</label>
                     
                     <!-- Partida 1 -->
                     <div class="bo3-game-box">
-                        <span style="font-size:0.85em; font-weight:bold; color:#ccc;">Partida 1:</span>
-                        <div style="display:flex; gap:10px; margin-top:5px;">
-                            <select id="bo3-g1-res" style="padding:8px; font-size:0.85em;">
-                                <option value="Victoria">Victoria</option>
-                                <option value="Derrota">Derrota</option>
-                                <option value="Empate">Empate</option>
-                            </select>
-                            <select id="bo3-g1-turno" style="padding:8px; font-size:0.85em;">
-                                <option value="true">Empiezo (1º)</option>
-                                <option value="false">Segundo (2º)</option>
-                            </select>
+                        <span style="font-size:0.85em; font-weight:bold; color:#ccc;">Partida 1</span>
+                        <div style="display:flex; gap:15px; margin-top:6px;">
+                            <div style="flex:1;">
+                                <span style="font-size:0.75em; color:#888;">Resultado:</span>
+                                <div class="btn-group" id="group-g1-res">
+                                    <button type="button" class="mini-btn active-w" onclick="seleccionarBoton('g1-res', 'Victoria', this)">W</button>
+                                    <button type="button" class="mini-btn" onclick="seleccionarBoton('g1-res', 'Derrota', this)">L</button>
+                                    <button type="button" class="mini-btn" onclick="seleccionarBoton('g1-res', 'Empate', this)">T</button>
+                                </div>
+                                <input type="hidden" id="input-g1-res" value="Victoria">
+                            </div>
+                            <div style="flex:1;">
+                                <span style="font-size:0.75em; color:#888;">Turno:</span>
+                                <div class="btn-group" id="group-g1-turno">
+                                    <button type="button" class="mini-btn active-turn" onclick="seleccionarBoton('g1-turno', 'true', this)">1º</button>
+                                    <button type="button" class="mini-btn" onclick="seleccionarBoton('g1-turno', 'false', this)">2º</button>
+                                </div>
+                                <input type="hidden" id="input-g1-turno" value="true">
+                            </div>
                         </div>
                     </div>
 
                     <!-- Partida 2 -->
                     <div class="bo3-game-box">
-                        <span style="font-size:0.85em; font-weight:bold; color:#ccc;">Partida 2:</span>
-                        <div style="display:flex; gap:10px; margin-top:5px;">
-                            <select id="bo3-g2-res" style="padding:8px; font-size:0.85em;">
-                                <option value="Derrota">Derrota</option>
-                                <option value="Victoria">Victoria</option>
-                                <option value="Empate">Empate</option>
-                            </select>
-                            <select id="bo3-g2-turno" style="padding:8px; font-size:0.85em;">
-                                <option value="true">Empiezo (1º)</option>
-                                <option value="false" selected>Segundo (2º)</option>
-                            </select>
+                        <span style="font-size:0.85em; font-weight:bold; color:#ccc;">Partida 2</span>
+                        <div style="display:flex; gap:15px; margin-top:6px;">
+                            <div style="flex:1;">
+                                <span style="font-size:0.75em; color:#888;">Resultado:</span>
+                                <div class="btn-group" id="group-g2-res">
+                                    <button type="button" class="mini-btn" onclick="seleccionarBoton('g2-res', 'Victoria', this)">W</button>
+                                    <button type="button" class="mini-btn active-l" onclick="seleccionarBoton('g2-res', 'Derrota', this)">L</button>
+                                    <button type="button" class="mini-btn" onclick="seleccionarBoton('g2-res', 'Empate', this)">T</button>
+                                </div>
+                                <input type="hidden" id="input-g2-res" value="Derrota">
+                            </div>
+                            <div style="flex:1;">
+                                <span style="font-size:0.75em; color:#888;">Turno:</span>
+                                <div class="btn-group" id="group-g2-turno">
+                                    <button type="button" class="mini-btn" onclick="seleccionarBoton('g2-turno', 'true', this)">1º</button>
+                                    <button type="button" class="mini-btn active-turn" onclick="seleccionarBoton('g2-turno', 'false', this)">2º</button>
+                                </div>
+                                <input type="hidden" id="input-g2-turno" value="false">
+                            </div>
                         </div>
                     </div>
 
                     <!-- Partida 3 (Opcional) -->
                     <div class="bo3-game-box">
-                        <span style="font-size:0.85em; font-weight:bold; color:#ccc;">Partida 3 (Si aplica):</span>
-                        <div style="display:flex; gap:10px; margin-top:5px;">
-                            <select id="bo3-g3-res" style="padding:8px; font-size:0.85em;">
-                                <option value="Ninguna">- No se jugó -</option>
-                                <option value="Victoria">Victoria</option>
-                                <option value="Derrota">Derrota</option>
-                                <option value="Empate">Empate</option>
-                            </select>
-                            <select id="bo3-g3-turno" style="padding:8px; font-size:0.85em;">
-                                <option value="true">Empiezo (1º)</option>
-                                <option value="false">Segundo (2º)</option>
-                            </select>
+                        <span style="font-size:0.85em; font-weight:bold; color:#ccc;">Partida 3 (Si aplica)</span>
+                        <div style="display:flex; gap:15px; margin-top:6px;">
+                            <div style="flex:1;">
+                                <span style="font-size:0.75em; color:#888;">Resultado:</span>
+                                <div class="btn-group" id="group-g3-res">
+                                    <button type="button" class="mini-btn active-none" onclick="seleccionarBoton('g3-res', 'Ninguna', this)">-</button>
+                                    <button type="button" class="mini-btn" onclick="seleccionarBoton('g3-res', 'Victoria', this)">W</button>
+                                    <button type="button" class="mini-btn" onclick="seleccionarBoton('g3-res', 'Derrota', this)">L</button>
+                                    <button type="button" class="mini-btn" onclick="seleccionarBoton('g3-res', 'Empate', this)">T</button>
+                                </div>
+                                <input type="hidden" id="input-g3-res" value="Ninguna">
+                            </div>
+                            <div style="flex:1;">
+                                <span style="font-size:0.75em; color:#888;">Turno:</span>
+                                <div class="btn-group" id="group-g3-turno">
+                                    <button type="button" class="mini-btn active-turn" onclick="seleccionarBoton('g3-turno', 'true', this)">1º</button>
+                                    <button type="button" class="mini-btn" onclick="seleccionarBoton('g3-turno', 'false', this)">2º</button>
+                                </div>
+                                <input type="hidden" id="input-g3-turno" value="true">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -311,6 +349,26 @@
             }
         }
 
+        // Función para manejar la selección interactiva de los botones minimalistas
+        function seleccionarBoton(grupo, valor, btnElement) {
+            const grupoContainer = btnElement.parentElement;
+            const botones = grupoContainer.querySelectorAll('.mini-btn');
+            
+            botones.forEach(b => {
+                b.className = 'mini-btn'; // Quitar todas las clases activas
+            });
+
+            // Asignar clase activa según el valor
+            if (valor === 'Victoria') btnElement.classList.add('active-w');
+            else if (valor === 'Derrota') btnElement.classList.add('active-l');
+            else if (valor === 'Empate') btnElement.classList.add('active-t');
+            else if (valor === 'true' || valor === 'false') btnElement.classList.add('active-turn');
+            else if (valor === 'Ninguna') btnElement.classList.add('active-none');
+
+            // Guardar valor en el input oculto correspondiente
+            document.getElementById(`input-${grupo}`).value = valor;
+        }
+
         async function actualizarDatalistDinamico() {
             const datalist = document.getElementById('lista-mazos-meta');
             const { data } = await supabaseClient.from('matchups').select('tu_baraja, baraja_rival');
@@ -343,46 +401,41 @@
             let secuenciaBo3 = "";
 
             if (formato === 'Bo1') {
-                resultadoFinal = document.getElementById('resultado-bo1').value;
-                empiezaTuFinal = document.getElementById('empiezas_tu-bo1').value === 'true';
+                resultadoFinal = document.getElementById('input-res-bo1').value;
+                empiezaTuFinal = document.getElementById('input-turno-bo1').value === 'true';
             } else {
-                // Recopilar Bo3
-                const r1 = document.getElementById('bo3-g1-res').value;
-                const t1 = document.getElementById('bo3-g1-turno').value === 'true' ? '1º' : '2º';
+                const r1 = document.getElementById('input-g1-res').value;
+                const t1 = document.getElementById('input-g1-turno').value === 'true' ? '1º' : '2º';
                 
-                const r2 = document.getElementById('bo3-g2-res').value;
-                const t2 = document.getElementById('bo3-g2-turno').value === 'true' ? '1º' : '2º';
+                const r2 = document.getElementById('input-g2-res').value;
+                const t2 = document.getElementById('input-g2-turno').value === 'true' ? '1º' : '2º';
                 
-                const r3 = document.getElementById('bo3-g3-res').value;
-                const t3 = document.getElementById('bo3-g3-turno').value === 'true' ? '1º' : '2º';
+                const r3 = document.getElementById('input-g3-res').value;
+                const t3 = document.getElementById('input-g3-turno').value === 'true' ? '1º' : '2º';
 
                 let victoriasCount = 0;
                 let derrotasCount = 0;
                 let letrasSecuencia = [];
 
-                // Partida 1
                 if (r1 === 'Victoria') { victoriasCount++; letrasSecuencia.push(`G1: V (${t1})`); }
                 else if (r1 === 'Derrota') { derrotasCount++; letrasSecuencia.push(`G1: D (${t1})`); }
                 else letrasSecuencia.push(`G1: E (${t1})`);
 
-                // Partida 2
                 if (r2 === 'Victoria') { victoriasCount++; letrasSecuencia.push(`G2: V (${t2})`); }
                 else if (r2 === 'Derrota') { derrotasCount++; letrasSecuencia.push(`G2: D (${t2})`); }
                 else letrasSecuencia.push(`G2: E (${t2})`);
 
-                // Partida 3 (si se jugó)
                 if (r3 !== 'Ninguna') {
                     if (r3 === 'Victoria') { victoriasCount++; letrasSecuencia.push(`G3: V (${t3})`); }
                     else if (r3 === 'Derrota') { derrotasCount++; letrasSecuencia.push(`G3: D (${t3})`); }
                     else letrasSecuencia.push(`G3: E (${t3})`);
                 }
 
-                // Determinar resultado global del set Bo3
                 if (victoriasCount > derrotasCount) resultadoFinal = 'Victoria';
                 else if (derrotasCount > victoriasCount) resultadoFinal = 'Derrota';
                 else resultadoFinal = 'Empate';
 
-                empiezaTuFinal = document.getElementById('bo3-g1-turno').value === 'true';
+                empiezaTuFinal = document.getElementById('input-g1-turno').value === 'true';
                 secuenciaBo3 = letrasSecuencia.join(' | ');
             }
 
@@ -405,6 +458,14 @@
                 msg.style.color = "#4dff4d";
                 msg.innerText = "¡Partida guardada!";
                 document.getElementById('formMatchup').reset();
+                
+                // Restablecer botones por defecto
+                document.querySelectorAll('.mini-btn').forEach(b => b.className = 'mini-btn');
+                document.querySelector('#group-res-bo1 .mini-btn:nth-child(1)').classList.add('active-w');
+                document.querySelector('#group-turno-bo1 .mini-btn:nth-child(1)').classList.add('active-turn');
+                document.getElementById('input-res-bo1').value = 'Victoria';
+                document.getElementById('input-turno-bo1').value = 'true';
+
                 document.getElementById('bloque-bo3').style.display = 'none';
                 document.getElementById('bloque-bo1').style.display = 'block';
                 cargarPartidas();
