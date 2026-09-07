@@ -174,8 +174,8 @@
             if (!user) { window.location.href = "index.html"; } 
             else { 
                 usuarioActual = user; 
-                cargarDatosPerfil(); 
-                cargarTorneosLive();
+                await cargarDatosPerfil(); 
+                await cargarTorneosLive();
                 cargarDatalistMazos();
 
                 if (window.location.hash === '#live') {
@@ -283,10 +283,8 @@
                 const partidasTorneo = (partidasUsuario || []).filter(p => p.notas && p.notas.includes(`[Torneo ID: ${ev.id}]`));
                 const numRondasRegistradas = partidasTorneo.length;
                 
-                // Configuración guardada o por defecto (4 rondas de suiza y Ninguno de corte)
                 const configTorneo = configuracionTorneosLocal[ev.id] || { totalRondas: 4, topCut: 'Ninguno' };
                 
-                // Generar opciones del selector de rondas (Suiza + Fases eliminatorias automáticas si aplica)
                 let opcionesRondasHtml = "";
                 for (let i = 1; i <= configTorneo.totalRondas; i++) {
                     opcionesRondasHtml += `<option value="Ronda ${i}">Ronda ${i}</option>`;
@@ -301,15 +299,14 @@
                     opcionesRondasHtml += `<option value="Final">Final</option>`;
                 }
 
-                // Autoselección de siguiente ronda inteligente
                 let siguienteRondaVal = `Ronda ${numRondasRegistradas + 1}`;
                 if (numRondasRegistradas >= configTorneo.totalRondas) {
                     if (configTorneo.topCut === 'Top 8') {
-                        if (numRondasRegistradas === configTorneosLocal[ev.id].totalRondas) siguienteRondaVal = 'Top 8';
-                        else if (numRondasRegistradas === configTorneosLocal[ev.id].totalRondas + 1) siguienteRondaVal = 'Top 4';
+                        if (numRondasRegistradas === configTorneo.totalRondas) siguienteRondaVal = 'Top 8';
+                        else if (numRondasRegistradas === configTorneo.totalRondas + 1) siguienteRondaVal = 'Top 4';
                         else siguienteRondaVal = 'Final';
                     } else if (configTorneo.topCut === 'Top 4') {
-                        if (numRondasRegistradas === configTorneosLocal[ev.id].totalRondas) siguienteRondaVal = 'Top 4';
+                        if (numRondasRegistradas === configTorneo.totalRondas) siguienteRondaVal = 'Top 4';
                         else siguienteRondaVal = 'Final';
                     } else {
                         siguienteRondaVal = `Ronda ${configTorneo.totalRondas}`;
@@ -366,16 +363,32 @@
                             <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
                                 <input type="text" id="live-rival-${ev.id}" list="lista-mazos-meta" placeholder="Mazo del rival..." autocomplete="off" style="padding: 8px; font-size:0.85em; margin:0; flex:1; min-width:140px;">
                                 <input type="text" id="live-notas-${ev.id}" placeholder="Notas rápidas..." style="padding: 8px; font-size:0.85em; margin:0; flex:1.5; min-width:140px;">
-                                <button onclick="registrarRondaLive(${ev.id}, '${mazoPropio}', '${ev.formato}')" style="margin:0; padding: 8px 15px; width:auto; font-size:0.85em;">Registrar Ronda</button>
+                                <button type="button" id="btn-reg-${ev.id}" style="margin:0; padding: 8px 15px; width:auto; font-size:0.85em;">Registrar Ronda</button>
                             </div>
                         </div>
                     </div>
                 `;
                 
                 contenedor.appendChild(card);
+                
+                // Asignar valor preseleccionado de ronda de forma segura
                 const selectRondaEl = document.getElementById(`live-ronda-${ev.id}`);
                 if (selectRondaEl) {
-                    selectRondaEl.value = siguienteRondaVal;
+                    // Comprobar si la opción existe antes de asignarla
+                    for (let opt of selectRondaEl.options) {
+                        if (opt.value === siguienteRondaVal) {
+                            selectRondaEl.value = siguienteRondaVal;
+                            break;
+                        }
+                    }
+                }
+
+                // Asignar evento al botón mediante addEventListener para garantizar que responde perfectamente
+                const btnReg = document.getElementById(`btn-reg-${ev.id}`);
+                if (btnReg) {
+                    btnReg.addEventListener('click', () => {
+                        registrarRondaLive(ev.id, mazoPropio, ev.formato);
+                    });
                 }
             });
         }
@@ -398,7 +411,7 @@
             const notasEl = document.getElementById(`live-notas-${idEvento}`);
 
             if (!rondaEl || !resultadoEl || !turnoEl || !rivalEl || !notasEl) {
-                alert("Error al encontrar los campos del formulario.");
+                alert("Error: No se han encontrado los campos del formulario.");
                 return;
             }
 
@@ -436,8 +449,8 @@
                 alert(`¡${ronda} registrada con éxito!`);
                 rivalEl.value = '';
                 notasEl.value = '';
-                cargarDatosPerfil();
-                cargarTorneosLive();
+                await cargarDatosPerfil();
+                await cargarTorneosLive();
             }
         }
 
