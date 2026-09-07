@@ -64,7 +64,7 @@
             <div class="nav-links">
                 <a href="dashboard.html" class="nav-link">📊 Partidas</a>
                 <a href="torneos.html" class="nav-link active">🏆 Torneos</a>
-                <a href="equipo.html" class="nav-link">👥 Miembros </a>
+                <a href="equipo.html" class="nav-link">👥 Miembros</a>
                 <a href="perfil.html" class="nav-link">👤 Mi Perfil</a>
             </div>
         </div>
@@ -348,9 +348,18 @@
                 } else {
                     listaAsistentes.forEach(asist => {
                         const spritesMazo = generarSpritesHtml(asist.mazo_previsto);
+                        
+                        // Si el asistente eres tú, enlace directo a tu perfil con la pestaña live activa
+                        let htmlNombre = "";
+                        if (asist.id_jugador === usuarioActual.id) {
+                            htmlNombre = `<a href="perfil.html#live" style="color: #e3350d; text-decoration: none; font-weight: bold;" title="Ir a mis torneos en vivo">👤 ${asist.nombre_jugador || 'Tú'} (Ver Live)</a>`;
+                        } else {
+                            htmlNombre = `<span style="font-weight:bold; color:#fff;">👤 ${asist.nombre_jugador || 'Compi'}</span>`;
+                        }
+
                         htmlAsistentes += `
                             <div class="asistente-row">
-                                <span style="font-weight:bold; color:#fff;">👤 ${asist.nombre_jugador || 'Compi'}</span>
+                                ${htmlNombre}
                                 <div class="asistente-info">
                                     <div class="sprites-wrapper">${spritesMazo}</div>
                                     <span style="color: #e3350d; font-weight: bold;">${asist.mazo_previsto || 'Sin mazo'}</span>
