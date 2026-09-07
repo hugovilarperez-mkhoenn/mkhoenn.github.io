@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuración de Cuenta</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        .sidebar { width: 240px; background-color: #1a1a1a; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #2a2a2a; }
+        .sidebar-top { padding: 20px; }
+        .sidebar h2 { font-size: 1.1em; color: #e3350d; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-links { display: flex; flex-direction: column; gap: 8px; }
+        .nav-link { display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #aaa; text-decoration: none; border-radius: 6px; font-weight: bold; transition: all 0.2s; }
+        .nav-link:hover { background-color: #2a2a2a; color: white; }
+        .nav-link.active { background-color: #e3350d; color: white; }
+        .sidebar-bottom { padding: 20px; border-top: 1px solid #2a2a2a; display: flex; flex-direction: column; gap: 8px; }
+        
+        .main-content { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; max-width: 600px; }
+        .card { background-color: #1e1e1e; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        
+        label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; font-size: 0.85em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+        input { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; box-sizing: border-box; background-color: #2a2a2a; color: white; font-family: inherit; transition: border-color 0.3s; }
+        input:focus { outline: none; border-color: #e3350d; }
+        
+        button { padding: 12px 20px; background-color: #e3350d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 20px; transition: background-color 0.2s; }
+        button:hover { background-color: #b32a0a; }
+        .btn-logout { width: 100%; background-color: #333; padding: 10px; font-size: 0.85em; border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; }
+        .btn-logout:hover { background-color: #444; }
+
+        .config-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
+        .avatar-preview { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #e3350d; background: #333; display: flex; align-items: center; justify-content: center; font-size: 1.8em; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-top">
+            <h2>Panel TCG</h2>
+            <div class="nav-links">
+                <a href="dashboard.html" class="nav-link">📊 Partidas</a>
+                <a href="torneos.html" class="nav-link">🏆 Torneos</a>
+                <a href="equipo.html" class="nav-link">👥 Miembros & Meta</a>
+                <a href="perfil.html" class="nav-link">👤 Mi Perfil</a>
+            </div>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="configuracion.html" class="nav-link active" style="padding: 10px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px;">⚙️ Configuración</a>
+            <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="card">
+            <h3 style="margin-top:0;">Configuración de la Cuenta</h3>
+            <div class="config-header">
+                <div id="avatar-container">
+                    <div class="avatar-preview">👤</div>
+                </div>
+                <div>
+                    <h4 id="user-email" style="margin:0 0 5px 0; color:#fff;">Cargando...</h4>
+                    <p style="margin:0; color:#aaa; font-size:0.85em;">Modifica tus credenciales públicas aquí.</p>
+                </div>
+            </div>
+
+            <form id="formConfig">
+                <label for="nombre_usuario">Nombre de Usuario</label>
+                <input type="text" id="nombre_usuario" placeholder="Tu nick en el equipo" required>
+
+                <label for="avatar_url">URL de la Imagen de Perfil</label>
+                <input type="url" id="avatar_url" placeholder="https://ejemplo.com/tufoto.jpg">
+
+                <button type="submit">Guardar Cambios</button>
+                <div id="mensajeConfig" style="margin-top:15px; text-align:center; font-size:0.9em;"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://xacmsdklvvturxmabhcn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhY21zZGtsdnZ0dXJ4bWFiaGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODY4ODQsImV4cCI6MjEwNDM2Mjg4NH0.Bq9whfVe5Ah7Kz8NUKWTu5lZqGZRzHZSk-5xy3sHmWQ';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let usuarioActual = null;
+
+        async function comprobarAutenticacion() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) { window.location.href = "index.html"; } 
+            else { 
+                usuarioActual = user; 
+                cargarDatosConfig(); 
+            }
+        }
+        comprobarAutenticacion();
+
+        async function cerrarSesion() {
+            await supabaseClient.auth.signOut();
+            window.location.href = "index.html";
+        }
+
+        async function cargarDatosConfig() {
+            document.getElementById('user-email').innerText = usuarioActual.email;
+            const { data: perfil } = await supabaseClient.from('perfiles').select('*').eq('id', usuarioActual.id).single();
+            const nombreDefault = usuarioActual.email.split('@')[0];
+            
+            if (perfil) {
+                document.getElementById('nombre_usuario').value = perfil.nombre_usuario || nombreDefault;
+                document.getElementById('avatar_url').value = perfil.avatar_url || '';
+                if (perfil.avatar_url) {
+                    document.getElementById('avatar-container').innerHTML = `<img src="${perfil.avatar_url}" class="avatar-preview">`;
+                }
+            } else {
+                document.getElementById('nombre_usuario').value = nombreDefault;
+            }
+        }
+
+        document.getElementById('formConfig').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const msg = document.getElementById('mensajeConfig');
+            msg.innerText = "Guardando cambios...";
+
+            const nuevoNombre = document.getElementById('nombre_usuario').value.trim();
+            const nuevaAvatar = document.getElementById('avatar_url').value.trim();
+
+            const { error } = await supabaseClient.from('perfiles').upsert({
+                id: usuarioActual.id,
+                nombre_usuario: nuevoNombre,
+                avatar_url: nuevaAvatar,
+                actualizado_en: new Date()
+            });
+
+            if (error) {
+                msg.style.color = "#ff4d4d";
+                msg.innerText = "Error al actualizar la configuración.";
+            } else {
+                msg.style.color = "#4dff4d";
+                msg.innerText = "¡Configuración guardada con éxito!";
+                cargarDatosConfig();
+                setTimeout(() => msg.innerText = "", 3000);
+            }
+        });
+    </script>
+</body>
+</html>
