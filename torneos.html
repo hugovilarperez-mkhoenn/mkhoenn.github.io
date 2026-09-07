@@ -51,6 +51,9 @@
         .pkmn-sprite { width: 30px; height: 30px; object-fit: contain; margin-left: -8px; background: rgba(255,255,255,0.05); border-radius: 50%; padding: 2px; }
         .pkmn-sprite:first-child { margin-left: 0; }
         .asistente-info { display: flex; align-items: center; gap: 8px; }
+
+        .icon-btn { background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 5px; margin: 0; color: white; opacity: 0.7; }
+        .icon-btn:hover { transform: scale(1.2); opacity: 1; }
     </style>
 </head>
 <body>
@@ -362,6 +365,7 @@
                             <p class="torneo-titulo">📅 ${evento.nombre_torneo}</p>
                             <span style="font-size: 0.85em; color: #aaa;">📍 ${evento.lugar || 'Por definir'} | 🗓️ ${evento.fecha_evento} (${evento.formato})</span>
                         </div>
+                        <button class="icon-btn" onclick="borrarTorneo(${evento.id})" title="Eliminar Torneo">🗑️</button>
                     </div>
                     <div class="asistentes-box">
                         <strong style="display:block; margin-bottom:8px; font-size:0.85em; color:#aaa; text-transform:uppercase;">Asistentes confirmados:</strong>
@@ -408,6 +412,22 @@
 
                 if (!error) cargarTorneos();
                 else alert("Error al actualizar la asistencia.");
+            }
+        }
+
+        async function borrarTorneo(idEvento) {
+            if (!confirm("¿Estás seguro de que quieres eliminar este torneo? Se borrarán también las asistencias asociadas.")) return;
+
+            // Primero borramos las asistencias de ese evento para evitar conflictos de llave foránea
+            await supabaseClient.from('asistencias').delete().eq('id_evento', idEvento);
+
+            // Luego borramos el evento
+            const { error } = await supabaseClient.from('eventos').delete().eq('id', idEvento);
+
+            if (!error) {
+                cargarTorneos();
+            } else {
+                alert("Error al eliminar el torneo.");
             }
         }
     </script>
