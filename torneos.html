@@ -52,8 +52,9 @@
         .pkmn-sprite:first-child { margin-left: 0; }
         .asistente-info { display: flex; align-items: center; gap: 8px; }
 
-        .icon-btn { background: none; border: none; font-size: 1.2em; cursor: pointer; padding: 5px; margin: 0; color: white; opacity: 0.7; }
-        .icon-btn:hover { transform: scale(1.2); opacity: 1; }
+        /* Estilo compacto para el botón de eliminar torneo */
+        .icon-btn-delete { background: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.3); font-size: 1.1em; cursor: pointer; padding: 6px 10px; border-radius: 6px; margin: 0; width: auto; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .icon-btn-delete:hover { background: rgba(255, 77, 77, 0.3); transform: scale(1.05); }
     </style>
 </head>
 <body>
@@ -365,7 +366,7 @@
                             <p class="torneo-titulo">📅 ${evento.nombre_torneo}</p>
                             <span style="font-size: 0.85em; color: #aaa;">📍 ${evento.lugar || 'Por definir'} | 🗓️ ${evento.fecha_evento} (${evento.formato})</span>
                         </div>
-                        <button class="icon-btn" onclick="borrarTorneo(${evento.id})" title="Eliminar Torneo">🗑️</button>
+                        <button class="icon-btn-delete" onclick="borrarTorneo(${evento.id})" title="Eliminar Torneo">🗑️</button>
                     </div>
                     <div class="asistentes-box">
                         <strong style="display:block; margin-bottom:8px; font-size:0.85em; color:#aaa; text-transform:uppercase;">Asistentes confirmados:</strong>
