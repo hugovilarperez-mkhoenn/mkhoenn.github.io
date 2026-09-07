@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel - Mis Partidas</title>
+    <title>Mi Perfil y Torneos en Vivo</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
@@ -17,52 +17,52 @@
         .nav-link.active { background-color: #e3350d; color: white; }
         .sidebar-bottom { padding: 20px; border-top: 1px solid #2a2a2a; display: flex; flex-direction: column; gap: 8px; }
         
-        .main-content { flex: 1; overflow-y: auto; padding: 30px; display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start; }
-        .card { background-color: #1e1e1e; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); flex: 1; min-width: 320px; }
+        .main-content { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
+        .card { background-color: #1e1e1e; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
         
-        label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; font-size: 0.85em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #333; border-radius: 6px; box-sizing: border-box; background-color: #2a2a2a; color: white; font-family: inherit; transition: border-color 0.3s; }
-        input:focus, select:focus, textarea:focus { outline: none; border-color: #e3350d; }
-        
-        button { width: 100%; padding: 12px; background-color: #e3350d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 20px; text-transform: uppercase; letter-spacing: 1px; transition: background-color 0.2s; }
+        button { padding: 10px 15px; background-color: #e3350d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; font-size: 0.85em; transition: background-color 0.2s; }
         button:hover { background-color: #b32a0a; }
         .btn-logout { width: 100%; background-color: #333; padding: 10px; font-size: 0.85em; border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; }
         .btn-logout:hover { background-color: #444; }
 
-        .winrate-container { width: 100%; background-color: #2a2a2a; border-radius: 8px; height: 12px; display: flex; overflow: hidden; margin-bottom: 10px; }
-        .bar-win { background-color: #4dff4d; transition: width 0.5s; }
-        .bar-loss { background-color: #ff4d4d; transition: width 0.5s; }
-        .bar-tie { background-color: #ffcc00; transition: width 0.5s; }
-        .stats-text { display: flex; justify-content: space-between; font-size: 0.85em; color: #aaa; margin-bottom: 15px; font-weight: bold; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #333; border-radius: 6px; box-sizing: border-box; background-color: #2a2a2a; color: white; font-family: inherit; }
+
+        /* Cabecera del Perfil */
+        .profile-header { display: flex; align-items: center; gap: 20px; background: #2a2a2a; padding: 20px; border-radius: 10px; border: 1px solid #333; }
+        .avatar-preview { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #e3350d; background: #333; display: flex; align-items: center; justify-content: center; font-size: 2em; }
+        .profile-info h2 { margin: 0 0 5px 0; color: #fff; }
+        .profile-info p { margin: 0; color: #aaa; font-size: 0.9em; }
+
+        /* Subpestañas del perfil */
+        .profile-tabs { display: flex; gap: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .tab-btn { background: #2a2a2a; border: none; color: #aaa; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 0.85em; }
+        .tab-btn.active { background: #e3350d; color: white; }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Torneo en vivo card */
+        .live-tournament-card { background: rgba(227, 53, 13, 0.1); border: 1px solid #e3350d; padding: 20px; border-radius: 8px; margin-bottom: 15px; }
+        .badge-live { background-color: #e3350d; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
         
-        .deck-stats-list { margin-bottom: 25px; display: flex; flex-direction: column; gap: 10px; }
-        .deck-stat-item { background-color: #2a2a2a; border: 1px solid #333; border-radius: 8px; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; }
-        .deck-stat-info { display: flex; align-items: center; gap: 8px; font-weight: bold; }
-        .deck-stat-record { font-family: monospace; font-size: 1.1em; }
+        .palmares-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+        .palmares-card { background: #2a2a2a; padding: 15px; border-radius: 8px; border: 1px solid #333; text-align: center; }
+        .palmares-card h4 { margin: 0 0 5px 0; color: #e3350d; }
+        .palmares-card span { font-size: 1.5em; font-weight: bold; color: #fff; }
+
+        /* Acordeón de Torneos en Palmarés */
+        .torneo-historico-item { background: #2a2a2a; border: 1px solid #333; border-radius: 8px; margin-bottom: 10px; overflow: hidden; }
+        .torneo-historico-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; background: #252525; }
+        .torneo-historico-header:hover { background: #2f2f2f; }
+        .torneo-historico-body { padding: 15px; border-top: 1px solid #333; display: none; background: #1e1e1e; }
+        .torneo-historico-body.open { display: block; }
         
-        .matchup-item { background-color: #2a2a2a; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; flex-direction: column; gap: 10px; border: 1px solid #333; }
-        .matchup-header { display: flex; justify-content: space-between; align-items: center; }
-        .mazos-container { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .mazo-display { display: flex; align-items: center; gap: 8px; font-size: 1.1em; font-weight: bold; background-color: #1e1e1e; padding: 5px 12px; border-radius: 20px; }
-        
-        .sprites-wrapper { display: flex; align-items: center; margin-right: 5px; }
-        .pkmn-sprite { width: 35px; height: 35px; object-fit: contain; margin-left: -8px; background: rgba(255,255,255,0.05); border-radius: 50%; padding: 2px; }
-        .pkmn-sprite:first-child { margin-left: 0; }
-        
-        .vs-text { color: #aaa; font-weight: normal; font-size: 0.9em; font-style: italic; }
-        .badges { display: flex; gap: 8px; flex-wrap: wrap; }
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
-        .badge-victoria { background-color: rgba(77, 255, 77, 0.2); color: #4dff4d; border: 1px solid #4dff4d; }
-        .badge-derrota { background-color: rgba(255, 77, 77, 0.2); color: #ff4d4d; border: 1px solid #ff4d4d; }
-        .badge-empate { background-color: rgba(255, 204, 0, 0.2); color: #ffcc00; border: 1px solid #ffcc00; }
-        .badge-turno { background-color: rgba(52, 152, 219, 0.2); color: #3498db; border: 1px solid #3498db; }
-        .badge-ronda { background-color: rgba(155, 89, 182, 0.2); color: #9b59b6; border: 1px solid #9b59b6; }
-        .badge-formato { background-color: rgba(230, 126, 34, 0.2); color: #e67e22; border: 1px solid #e67e22; }
-        .badge-secuencia { background-color: rgba(46, 204, 113, 0.2); color: #2ecc71; font-family: monospace; }
-        
-        .notas { font-size: 0.85em; color: #ccc; background-color: #1e1e1e; padding: 10px; border-radius: 6px; margin: 0; border-left: 3px solid #555; }
-        .icon-btn-delete { background: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.3); font-size: 1.1em; cursor: pointer; padding: 6px 10px; border-radius: 6px; margin: 0; width: auto; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .icon-btn-delete:hover { background: rgba(255, 77, 77, 0.3); transform: scale(1.05); }
+        .ronda-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #2a2a2a; font-size: 0.9em; }
+        .ronda-row:last-child { border-bottom: none; }
+        .badge-resultado { padding: 2px 8px; border-radius: 12px; font-size: 0.75em; font-weight: bold; text-transform: uppercase; }
+        .badge-Victoria { background: rgba(77, 255, 77, 0.2); color: #4dff4d; border: 1px solid #4dff4d; }
+        .badge-Derrota { background: rgba(255, 77, 77, 0.2); color: #ff4d4d; border: 1px solid #ff4d4d; }
+        .badge-Empate { background: rgba(255, 204, 0, 0.2); color: #ffcc00; border: 1px solid #ffcc00; }
     </style>
 </head>
 <body>
@@ -71,10 +71,10 @@
         <div class="sidebar-top">
             <h2>Panel TCG</h2>
             <div class="nav-links">
-                <a href="dashboard.html" class="nav-link active">📊 Partidas</a>
+                <a href="dashboard.html" class="nav-link">📊 Partidas</a>
                 <a href="torneos.html" class="nav-link">🏆 Torneos</a>
-                <a href="equipo.html" class="nav-link">👥 Miembros </a>
-                <a href="perfil.html" class="nav-link">👤 Mi Perfil</a>
+                <a href="equipo.html" class="nav-link">👥 Miembros</a>
+                <a href="perfil.html" class="nav-link active">👤 Mi Perfil</a>
             </div>
         </div>
         <div class="sidebar-bottom">
@@ -86,78 +86,56 @@
     <datalist id="lista-mazos-meta"></datalist>
 
     <div class="main-content">
-        <div class="card" style="flex: 0.9;">
-            <h3 style="margin-top:0;">Registrar Partida</h3>
-            <form id="formMatchup">
-                <label for="tu_baraja">Tu Baraja</label>
-                <input type="text" id="tu_baraja" list="lista-mazos-meta" placeholder="Ej: Dragapult ex" required autocomplete="off">
-
-                <label for="baraja_rival">Baraja Rival</label>
-                <input type="text" id="baraja_rival" list="lista-mazos-meta" placeholder="Ej: Raging Bolt" required autocomplete="off">
-
-                <label for="resultado">Resultado</label>
-                <select id="resultado">
-                    <option value="Victoria">Victoria</option>
-                    <option value="Derrota">Derrota</option>
-                    <option value="Empate">Empate</option>
-                </select>
-
-                <label for="formato">Formato</label>
-                <select id="formato" onchange="cambiarFormato()">
-                    <option value="Bo1">Al Mejor de 1 (Bo1)</option>
-                    <option value="Bo3">Al Mejor de 3 (Bo3)</option>
-                </select>
-
-                <div id="campo-secuencia" style="display:none;">
-                    <label for="secuencia_bo3">Secuencia Bo3 (Ej: V-D-V)</label>
-                    <input type="text" id="secuencia_bo3" placeholder="Ej: Victoria, Derrota, Victoria">
-                </div>
-
-                <label for="empiezas_tu">Orden de Turno</label>
-                <select id="empiezas_tu">
-                    <option value="true">Empiezo yo (1º)</option>
-                    <option value="false">Empieza el rival (2º)</option>
-                </select>
-
-                <label for="ronda_suiza">Ronda (Opcional)</label>
-                <select id="ronda_suiza">
-                    <option value="">-- Sin especificar --</option>
-                    <option value="Ronda 1">Ronda 1</option>
-                    <option value="Ronda 2">Ronda 2</option>
-                    <option value="Ronda 3">Ronda 3</option>
-                    <option value="Ronda 4">Ronda 4</option>
-                    <option value="Ronda 5">Ronda 5</option>
-                    <option value="Ronda 6">Ronda 6</option>
-                    <option value="Top Cut">Top Cut</option>
-                </select>
-
-                <label for="notas">Notas / Comentarios</label>
-                <textarea id="notas" rows="2" placeholder="Ej: Me ganaron por mazo vacío..."></textarea>
-
-                <button type="submit">Guardar Partida</button>
-                <div id="mensajePartida" style="margin-top:10px; text-align:center; font-size:0.9em;"></div>
-            </form>
+        <!-- Cabecera del Perfil -->
+        <div class="profile-header">
+            <div id="avatar-container">
+                <div class="avatar-preview" id="avatar-placeholder">👤</div>
+            </div>
+            <div class="profile-info">
+                <h2 id="user-nombre">Cargando perfil...</h2>
+                <p id="user-email">...</p>
+            </div>
         </div>
 
-        <div class="card" style="flex: 1.4;">
-            <h3 style="margin-top:0;">Estadísticas Generales</h3>
-            <div class="winrate-container">
-                <div id="bar-w" class="bar-win" style="width: 0%;"></div>
-                <div id="bar-t" class="bar-tie" style="width: 0%;"></div>
-                <div id="bar-l" class="bar-loss" style="width: 0%;"></div>
-            </div>
-            <div class="stats-text">
-                <span id="stat-w" style="color:#4dff4d">0% Victorias (0)</span>
-                <span id="stat-t" style="color:#ffcc00">0% Empates (0)</span>
-                <span id="stat-l" style="color:#ff4d4d">0% Derrotas (0)</span>
-            </div>
+        <!-- Subpestañas -->
+        <div class="profile-tabs">
+            <button class="tab-btn active" onclick="cambiarPestana('palmares', event)">🏆 Mi Palmarés</button>
+            <button class="tab-btn" onclick="cambiarPestana('live', event)">🔴 Torneos en Vivo</button>
+        </div>
 
-            <h3 style="margin-top:20px; border-top: 1px solid #333; padding-top: 15px;">Desglose por Mazo</h3>
-            <div id="lista-stats-mazos" class="deck-stats-list"></div>
+        <!-- Pestaña 1: Palmarés y Estadísticas Personales -->
+        <div id="tab-palmares" class="tab-content active">
+            <div class="card">
+                <h3 style="margin-top:0;">Estadísticas y Palmarés</h3>
+                <div class="palmares-grid">
+                    <div class="palmares-card">
+                        <h4>Torneos Apuntados</h4>
+                        <span id="stat-torneos-jugados">0</span>
+                    </div>
+                    <div class="palmares-card">
+                        <h4>Victorias Totales</h4>
+                        <span id="stat-victorias" style="color:#4dff4d">0</span>
+                    </div>
+                    <div class="palmares-card">
+                        <h4>Win Rate General</h4>
+                        <span id="stat-winrate">0%</span>
+                    </div>
+                </div>
 
-            <h3 style="margin-top:20px; border-top: 1px solid #333; padding-top: 15px;">Historial de Partidas</h3>
-            <div id="lista-matchups">
-                <p style="color: #aaa;">Cargando partidas...</p>
+                <h3 style="margin-top: 30px; border-top: 1px solid #333; padding-top: 20px;">Historial de Torneos y Desglose</h3>
+                <div id="contenedor-palmares-torneos">
+                    <p style="color:#aaa;">Cargando historial de torneos...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña 2: Torneos en Vivo -->
+        <div id="tab-live" class="tab-content">
+            <div class="card">
+                <h3 style="margin-top:0;">Torneos en Directo (Modo Live)</h3>
+                <div id="contenedor-torneos-live">
+                    <p style="color:#aaa;">Cargando tus torneos activos...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -168,6 +146,7 @@
         const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
         let usuarioActual = null;
+        let configuracionTorneosLocal = JSON.parse(localStorage.getItem('config_torneos_live') || '{}');
 
         const arquetiposBase = [
             "Dragapult", "Mega Excadrill", "Alakazam Dudunsparce", "Festival Lead", 
@@ -190,51 +169,20 @@
             "Ursaluna Lunatone", "Azumarill", "Archaludon"
         ];
 
-        const diccionarioArquetipos = {
-            "basic box": ["ogerpon", "clefairy"],
-            "festival lead": ["dipplin", "thwackey"],
-            "dhelmise hide n' sneak": ["dhelmise", "banette"],
-            "seaking festival lead": ["seaking", "thwackey"],
-            "toxtricity box": ["toxtricity", "absol"],
-            "mega absol box": ["absol", "kangaskhan"],
-            "rocket's mewtwo": ["mewtwo", "spidops"],
-            "tera box": ["terapagos", "ogerpon"],
-            "marnie's grimmsnarl": ["grimmsnarl", "froslass"],
-            "grimmsnarl froslass": ["grimmsnarl", "froslass"]
-        };
-
-        function generarSpritesHtml(textoMazo) {
-            if (!textoMazo) return "";
-            let textoMin = textoMazo.toLowerCase().trim();
-            let listaPokemons = [];
-
-            if (diccionarioArquetipos[textoMin]) {
-                listaPokemons = diccionarioArquetipos[textoMin];
-            } else {
-                let limpio = textoMin;
-                limpio = limpio.replace(/\b(ex|v|vmax|vstar|gx|box|deck|hand|inspire|lead|inn|sneak|surge|mega|n's|rocket's|hop's|cynthia's|steven's|marnie's|erika's|lillie's)\b/g, '');
-                limpio = limpio.replace(/['’]s/g, ''); 
-                let palabras = limpio.split(/\s+/).filter(p => p.length > 2);
-                listaPokemons = palabras.slice(0, 2);
-                if (listaPokemons.length === 0 && textoMin.length > 0) {
-                    listaPokemons = [textoMin.replace(/[^a-z]/g, '')];
-                }
-            }
-
-            let html = "";
-            listaPokemons.forEach(pkmn => {
-                const cleanName = pkmn.replace(/[^a-z]/g, '');
-                if (cleanName) {
-                    html += `<img src="https://play.pokemonshowdown.com/sprites/dex/${cleanName}.png" class="pkmn-sprite" onerror="this.style.display='none'" title="${cleanName}">`;
-                }
-            });
-            return html;
-        }
-
         async function comprobarAutenticacion() {
             const { data: { user } } = await supabaseClient.auth.getUser();
             if (!user) { window.location.href = "index.html"; } 
-            else { usuarioActual = user; cargarPartidas(); }
+            else { 
+                usuarioActual = user; 
+                await cargarDatosPerfil(); 
+                await cargarTorneosLive();
+                cargarDatalistMazos();
+
+                if (window.location.hash === '#live') {
+                    const btnLive = document.querySelectorAll('.tab-btn')[1];
+                    if (btnLive) cambiarPestana('live', { currentTarget: btnLive });
+                }
+            }
         }
         comprobarAutenticacion();
 
@@ -243,187 +191,346 @@
             window.location.href = "index.html";
         }
 
-        function cambiarFormato() {
-            const formato = document.getElementById('formato').value;
-            const campoSecuencia = document.getElementById('campo-secuencia');
-            campoSecuencia.style.display = formato === 'Bo3' ? 'block' : 'none';
+        function cambiarPestana(pestana, evento) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${pestana}`).classList.add('active');
+            evento.currentTarget.classList.add('active');
         }
 
-        async function actualizarDatalistDinamico() {
+        async function cargarDatosPerfil() {
+            document.getElementById('user-email').innerText = usuarioActual.email;
+            
+            const { data: perfil } = await supabaseClient.from('perfiles').select('*').eq('id', usuarioActual.id).single();
+            const nombreDefault = usuarioActual.email.split('@')[0];
+            
+            if (perfil) {
+                document.getElementById('user-nombre').innerText = perfil.nombre_usuario || nombreDefault;
+                if (perfil.avatar_url) {
+                    document.getElementById('avatar-container').innerHTML = `<img src="${perfil.avatar_url}" class="avatar-preview">`;
+                }
+            } else {
+                document.getElementById('user-nombre').innerText = nombreDefault;
+            }
+
+            const { data: partidas } = await supabaseClient.from('matchups').select('*').eq('id_jugador', usuarioActual.id);
+            if (partidas) {
+                const total = partidas.length;
+                const victorias = partidas.filter(p => p.resultado === 'Victoria').length;
+                const wr = total ? Math.round((victorias / total) * 100) : 0;
+                
+                document.getElementById('stat-victorias').innerText = victorias;
+                document.getElementById('stat-winrate').innerText = `${wr}%`;
+            }
+
+            const { data: asistencias } = await supabaseClient.from('asistencias').select('*').eq('id_jugador', usuarioActual.id);
+            if (asistencias) {
+                document.getElementById('stat-torneos-jugados').innerText = asistencias.length;
+            }
+
+            cargarPalmaresTorneos(partidas || []);
+        }
+
+        async function cargarDatalistMazos() {
             const datalist = document.getElementById('lista-mazos-meta');
             const { data } = await supabaseClient.from('matchups').select('tu_baraja, baraja_rival');
-            
-            const mazosPersonalizados = new Set();
-            if (data) {
-                data.forEach(p => {
-                    if (p.tu_baraja) mazosPersonalizados.add(p.tu_baraja.trim());
-                    if (p.baraja_rival) mazosPersonalizados.add(p.baraja_rival.trim());
-                });
-            }
-            const setCompleto = new Set([...arquetiposBase, ...mazosPersonalizados]);
-
+            const mazos = new Set(arquetiposBase);
+            if (data) data.forEach(p => { if (p.tu_baraja) mazos.add(p.tu_baraja.trim()); });
             datalist.innerHTML = "";
-            setCompleto.forEach(mazo => {
-                const option = document.createElement('option');
-                option.value = mazo;
-                datalist.appendChild(option);
+            mazos.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                datalist.appendChild(opt);
             });
         }
 
-        document.getElementById('formMatchup').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const msg = document.getElementById('mensajePartida');
-            msg.innerText = "Guardando...";
-
-            const { error } = await supabaseClient.from('matchups').insert([{
-                id_jugador: usuarioActual.id,
-                tu_baraja: document.getElementById('tu_baraja').value.trim(),
-                baraja_rival: document.getElementById('baraja_rival').value.trim(),
-                resultado: document.getElementById('resultado').value,
-                formato: document.getElementById('formato').value,
-                secuencia_bo3: document.getElementById('secuencia_bo3').value.trim(),
-                empiezas_tu: document.getElementById('empiezas_tu').value === 'true',
-                ronda_suiza: document.getElementById('ronda_suiza').value,
-                notas: document.getElementById('notas').value.trim()
-            }]);
-
-            if (error) {
-                msg.style.color = "#ff4d4d";
-                msg.innerText = "Error al guardar la partida.";
-            } else {
-                msg.style.color = "#4dff4d";
-                msg.innerText = "¡Partida guardada!";
-                document.getElementById('formMatchup').reset();
-                document.getElementById('campo-secuencia').style.display = 'none';
-                cargarPartidas();
-                setTimeout(() => msg.innerText = "", 3000);
-            }
-        });
-
-        async function cargarPartidas() {
-            const contenedor = document.getElementById('lista-matchups');
-            await actualizarDatalistDinamico();
+        async function cargarTorneosLive() {
+            const contenedor = document.getElementById('contenedor-torneos-live');
             
-            const { data, error } = await supabaseClient
-                .from('matchups')
-                .select('*')
-                .eq('id_jugador', usuarioActual.id)
-                .order('creado_en', { ascending: false });
+            const { data: asistencias, error: errAsist } = await supabaseClient
+                .from('asistencias')
+                .select('id_evento, mazo_previsto')
+                .eq('id_jugador', usuarioActual.id);
 
-            if (error) {
-                contenedor.innerHTML = "<p style='color: #ff4d4d;'>Error al cargar partidas.</p>";
+            if (errAsist || !asistencias || asistencias.length === 0) {
+                contenedor.innerHTML = "<p style='color:#aaa;'>No estás apuntado a ningún torneo actualmente. Apúntate desde el calendario de la pestaña de Torneos.</p>";
                 return;
             }
 
-            actualizarEstadisticas(data);
-            actualizarEstadisticasPorMazo(data);
+            const idsEventos = asistencias.map(a => a.id_evento);
+            const mapaMazos = {};
+            asistencias.forEach(a => { mapaMazos[a.id_evento] = a.mazo_previsto; });
 
-            if (!data.length) {
-                contenedor.innerHTML = "<p style='color: #aaa;'>No hay partidas registradas.</p>";
+            const { data: eventos, error: errEv } = await supabaseClient
+                .from('eventos')
+                .select('*')
+                .in('id', idsEventos)
+                .order('fecha_evento', { ascending: true });
+
+            if (errEv || !eventos || eventos.length === 0) {
+                contenedor.innerHTML = "<p style='color:#aaa;'>No hay torneos activos programados.</p>";
+                return;
+            }
+
+            const { data: partidasUsuario } = await supabaseClient
+                .from('matchups')
+                .select('*')
+                .eq('id_jugador', usuarioActual.id);
+
+            contenedor.innerHTML = "";
+            eventos.forEach(ev => {
+                const mazoPropio = mapaMazos[ev.id] || '';
+                const partidasTorneo = (partidasUsuario || []).filter(p => p.notas && p.notas.includes(`[Torneo ID: ${ev.id}]`));
+                const numRondasRegistradas = partidasTorneo.length;
+                
+                const configTorneo = configuracionTorneosLocal[ev.id] || { totalRondas: 4, topCut: 'Ninguno' };
+                
+                let opcionesRondasHtml = "";
+                for (let i = 1; i <= configTorneo.totalRondas; i++) {
+                    opcionesRondasHtml += `<option value="Ronda ${i}">Ronda ${i}</option>`;
+                }
+                
+                if (configTorneo.topCut === 'Top 8') {
+                    opcionesRondasHtml += `<option value="Top 8">Top 8</option>`;
+                    opcionesRondasHtml += `<option value="Top 4">Top 4 (Semifinales)</option>`;
+                    opcionesRondasHtml += `<option value="Final">Final</option>`;
+                } else if (configTorneo.topCut === 'Top 4') {
+                    opcionesRondasHtml += `<option value="Top 4">Top 4 (Semifinales)</option>`;
+                    opcionesRondasHtml += `<option value="Final">Final</option>`;
+                }
+
+                let siguienteRondaVal = `Ronda ${numRondasRegistradas + 1}`;
+                if (numRondasRegistradas >= configTorneo.totalRondas) {
+                    if (configTorneo.topCut === 'Top 8') {
+                        if (numRondasRegistradas === configTorneo.totalRondas) siguienteRondaVal = 'Top 8';
+                        else if (numRondasRegistradas === configTorneo.totalRondas + 1) siguienteRondaVal = 'Top 4';
+                        else siguienteRondaVal = 'Final';
+                    } else if (configTorneo.topCut === 'Top 4') {
+                        if (numRondasRegistradas === configTorneo.totalRondas) siguienteRondaVal = 'Top 4';
+                        else siguienteRondaVal = 'Final';
+                    } else {
+                        siguienteRondaVal = `Ronda ${configTorneo.totalRondas}`;
+                    }
+                }
+
+                const card = document.createElement('div');
+                card.className = 'live-tournament-card';
+                card.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+                        <div>
+                            <h4 style="margin:0 0 4px 0; font-size:1.1em; color:#fff;">📅 ${ev.nombre_torneo}</h4>
+                            <span style="font-size:0.85em; color:#aaa;">📍 ${ev.lugar || 'Por definir'} | 🗓️ ${ev.fecha_evento} (${ev.formato})</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <span style="font-size:0.8em; color:#ccc;">Suiza: 
+                                <select id="cfg-rondas-${ev.id}" onchange="guardarConfigTorneo(${ev.id})" style="padding:4px; font-size:0.85em; width:50px; display:inline-block;">
+                                    <option value="3" ${configTorneo.totalRondas == 3 ? 'selected' : ''}>3</option>
+                                    <option value="4" ${configTorneo.totalRondas == 4 ? 'selected' : ''}>4</option>
+                                    <option value="5" ${configTorneo.totalRondas == 5 ? 'selected' : ''}>5</option>
+                                    <option value="6" ${configTorneo.totalRondas == 6 ? 'selected' : ''}>6</option>
+                                    <option value="7" ${configTorneo.totalRondas == 7 ? 'selected' : ''}>7</option>
+                                    <option value="8" ${configTorneo.totalRondas == 8 ? 'selected' : ''}>8</option>
+                                </select>
+                            </span>
+                            <span style="font-size:0.8em; color:#ccc;">Corte: 
+                                <select id="cfg-top-${ev.id}" onchange="guardarConfigTorneo(${ev.id})" style="padding:4px; font-size:0.85em; width:90px; display:inline-block;">
+                                    <option value="Ninguno" ${configTorneo.topCut === 'Ninguno' ? 'selected' : ''}>Ninguno</option>
+                                    <option value="Top 8" ${configTorneo.topCut === 'Top 8' ? 'selected' : ''}>Top 8</option>
+                                    <option value="Top 4" ${configTorneo.topCut === 'Top 4' ? 'selected' : ''}>Top 4</option>
+                                </select>
+                            </span>
+                            <span class="badge-live">${numRondasRegistradas} Hechas</span>
+                        </div>
+                    </div>
+                    <div style="background:#1e1e1e; padding:15px; border-radius:6px; margin-top:10px;">
+                        <p style="margin:0 0 10px 0; font-size:0.9em; font-weight:bold; color:#ccc;">Tu mazo: <span style="color:#e3350d;">${mazoPropio || 'Sin mazo definido'}</span></p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <select id="live-ronda-${ev.id}" style="padding: 8px; font-size:0.85em; flex:1; min-width:110px;">
+                                    ${opcionesRondasHtml}
+                                </select>
+                                <select id="live-resultado-${ev.id}" style="padding: 8px; font-size:0.85em; flex:1; min-width:110px;">
+                                    <option value="Victoria">Victoria</option>
+                                    <option value="Derrota">Derrota</option>
+                                    <option value="Empate">Empate</option>
+                                </select>
+                                <select id="live-turno-${ev.id}" style="padding: 8px; font-size:0.85em; flex:1; min-width:110px;">
+                                    <option value="true">Empiezo (1º)</option>
+                                    <option value="false">Segundo (2º)</option>
+                                </select>
+                            </div>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px;">
+                                <input type="text" id="live-rival-${ev.id}" list="lista-mazos-meta" placeholder="Mazo del rival..." autocomplete="off" style="padding: 8px; font-size:0.85em; margin:0; flex:1; min-width:140px;">
+                                <input type="text" id="live-notas-${ev.id}" placeholder="Notas rápidas..." style="padding: 8px; font-size:0.85em; margin:0; flex:1.5; min-width:140px;">
+                                <button type="button" id="btn-reg-${ev.id}" style="margin:0; padding: 8px 15px; width:auto; font-size:0.85em;">Registrar Ronda</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                contenedor.appendChild(card);
+                
+                const selectRondaEl = document.getElementById(`live-ronda-${ev.id}`);
+                if (selectRondaEl) {
+                    for (let opt of selectRondaEl.options) {
+                        if (opt.value === siguienteRondaVal) {
+                            selectRondaEl.value = siguienteRondaVal;
+                            break;
+                        }
+                    }
+                }
+
+                const btnReg = document.getElementById(`btn-reg-${ev.id}`);
+                if (btnReg) {
+                    btnReg.addEventListener('click', () => {
+                        registrarRondaLive(ev.id, mazoPropio, ev.formato);
+                    });
+                }
+            });
+        }
+
+        function guardarConfigTorneo(idEvento) {
+            const totalRondas = document.getElementById(`cfg-rondas-${idEvento}`).value;
+            const topCut = document.getElementById(`cfg-top-${idEvento}`).value;
+            
+            configuracionTorneosLocal[idEvento] = { totalRondas: parseInt(totalRondas), topCut: topCut };
+            localStorage.setItem('config_torneos_live', JSON.stringify(configuracionTorneosLocal));
+            
+            cargarTorneosLive();
+        }
+
+        async function registrarRondaLive(idEvento, mazoPropio, formatoTorneo) {
+            const rondaEl = document.getElementById(`live-ronda-${idEvento}`);
+            const resultadoEl = document.getElementById(`live-resultado-${idEvento}`);
+            const turnoEl = document.getElementById(`live-turno-${idEvento}`);
+            const rivalEl = document.getElementById(`live-rival-${idEvento}`);
+            const notasEl = document.getElementById(`live-notas-${idEvento}`);
+
+            if (!rondaEl || !resultadoEl || !turnoEl || !rivalEl || !notasEl) {
+                alert("Error: No se han encontrado los campos del formulario.");
+                return;
+            }
+
+            const ronda = rondaEl.value;
+            const resultado = resultadoEl.value;
+            const empiezaTu = turnoEl.value === 'true';
+            const mazoRival = rivalEl.value.trim();
+            const notas = notasEl.value.trim();
+
+            if (!mazoPropio) {
+                alert("Debes definir tu mazo en la sección de asistencia del calendario de torneos antes de registrar partidas.");
+                return;
+            }
+            if (!mazoRival) {
+                alert("Introduce el mazo del rival.");
+                return;
+            }
+
+            const notaFinal = `[Torneo ID: ${idEvento}] ${notas}`.trim();
+
+            const { error } = await supabaseClient.from('matchups').insert([{
+                id_jugador: usuarioActual.id,
+                tu_baraja: mazoPropio,
+                baraja_rival: mazoRival,
+                resultado: resultado,
+                empiezas_tu: empiezaTu,
+                formato: formatoTorneo || 'Bo1',
+                ronda_suiza: ronda,
+                notas: notaFinal
+            }]);
+
+            if (error) {
+                alert("Error al registrar la ronda: " + error.message);
+            } else {
+                alert(`¡${ronda} registrada con éxito!`);
+                rivalEl.value = '';
+                notasEl.value = '';
+                await cargarDatosPerfil();
+                await cargarTorneosLive();
+            }
+        }
+
+        async function cargarPalmaresTorneos(partidas) {
+            const contenedor = document.getElementById('contenedor-palmares-torneos');
+            
+            const { data: asistencias } = await supabaseClient
+                .from('asistencias')
+                .select('id_evento')
+                .eq('id_jugador', usuarioActual.id);
+
+            if (!asistencias || asistencias.length === 0) {
+                contenedor.innerHTML = "<p style='color:#aaa;'>No hay torneos registrados en tu palmarés todavía.</p>";
+                return;
+            }
+
+            const idsEventos = asistencias.map(a => a.id_evento);
+            const { data: eventos } = await supabaseClient
+                .from('eventos')
+                .select('*')
+                .in('id', idsEventos)
+                .order('fecha_evento', { ascending: false });
+
+            if (!eventos || eventos.length === 0) {
+                contenedor.innerHTML = "<p style='color:#aaa;'>No hay torneos disponibles.</p>";
                 return;
             }
 
             contenedor.innerHTML = "";
-            data.forEach(partida => {
-                const item = document.createElement('div');
-                item.className = 'matchup-item';
-                
-                let claseResultado = `badge-${partida.resultado.toLowerCase()}`;
-                const ordenTurno = partida.empiezas_tu ? 'Fui 1º' : 'Fui 2º';
-                let htmlRonda = partida.ronda_suiza ? `<span class="badge badge-ronda">🏆 ${partida.ronda_suiza}</span>` : '';
-                let htmlNotas = partida.notas ? `<p class="notas">📝 ${partida.notas}</p>` : '';
-                let htmlFormato = partida.formato === 'Bo3' && partida.secuencia_bo3 
-                    ? `<span class="badge badge-secuencia">Bo3: ${partida.secuencia_bo3}</span>` 
-                    : `<span class="badge badge-formato">Bo1</span>`;
+            eventos.forEach(ev => {
+                const partidasTorneo = partidas.filter(p => p.notas && p.notas.includes(`[Torneo ID: ${ev.id}]`));
+                if (partidasTorneo.length === 0) return;
 
-                const htmlSpritesTu = generarSpritesHtml(partida.tu_baraja);
-                const htmlSpritesRival = generarSpritesHtml(partida.baraja_rival);
+                let v = 0, d = 0, t = 0;
+                partidasTorneo.forEach(p => {
+                    if (p.resultado === 'Victoria') v++;
+                    else if (p.resultado === 'Derrota') d++;
+                    else t++;
+                });
+
+                const item = document.createElement('div');
+                item.className = 'torneo-historico-item';
+                
+                let htmlRondas = "";
+                partidasTorneo.forEach(p => {
+                    const notasLimpias = p.notas.replace(`[Torneo ID: ${ev.id}]`, '').trim();
+                    htmlRondas += `
+                        <div class="ronda-row">
+                            <div>
+                                <strong style="color:#fff;">${p.ronda_suiza || 'Ronda'}</strong>: 
+                                <span style="color:#e3350d; font-weight:bold;">${p.tu_baraja}</span> vs <span style="color:#ccc;">${p.baraja_rival}</span>
+                                ${notasLimpias ? `<div style="font-size:0.8em; color:#888; margin-top:2px;">📝 ${notasLimpias}</div>` : ''}
+                            </div>
+                            <span class="badge-resultado badge-${p.resultado}">${p.resultado}</span>
+                        </div>
+                    `;
+                });
 
                 item.innerHTML = `
-                    <div class="matchup-header">
-                        <div class="mazos-container">
-                            <div class="mazo-display"><div class="sprites-wrapper">${htmlSpritesTu}</div> <span>${partida.tu_baraja}</span></div>
-                            <span class="vs-text">VS</span>
-                            <div class="mazo-display"><div class="sprites-wrapper">${htmlSpritesRival}</div> <span>${partida.baraja_rival}</span></div>
+                    <div class="torneo-historico-header" onclick="toggleAcordeon(this)">
+                        <div>
+                            <h4 style="margin:0; color:#fff; font-size:1.05em;">🏆 ${ev.nombre_torneo}</h4>
+                            <span style="font-size:0.8em; color:#aaa;">🗓️ ${ev.fecha_evento} | Récord: <strong style="color:#4dff4d">${v}V</strong> - <strong style="color:#ff4d4d">${d}D</strong> - <strong style="color:#ffcc00">${t}E</strong></span>
                         </div>
-                        <button class="icon-btn-delete" onclick="borrarPartida(${partida.id})" title="Eliminar Partida">🗑️</button>
+                        <span style="color:#aaa; font-size:1.2em;">▼</span>
                     </div>
-                    <div class="badges">
-                        <span class="badge ${claseResultado}">${partida.resultado}</span>
-                        ${htmlFormato}
-                        <span class="badge badge-turno">⏱️ ${ordenTurno}</span>
-                        ${htmlRonda}
+                    <div class="torneo-historico-body">
+                        ${htmlRondas}
                     </div>
-                    ${htmlNotas}
                 `;
                 contenedor.appendChild(item);
             });
-        }
 
-        async function borrarPartida(id) {
-            if (!confirm("¿Seguro que deseas eliminar esta partida?")) return;
-            const { error } = await supabaseClient.from('matchups').delete().eq('id', id);
-            if (!error) cargarPartidas();
-            else alert("Error al eliminar la partida.");
-        }
-
-        function actualizarEstadisticas(partidas) {
-            let w = 0, l = 0, t = 0;
-            partidas.forEach(p => {
-                if(p.resultado === "Victoria") w++;
-                else if(p.resultado === "Derrota") l++;
-                else t++;
-            });
-            const total = partidas.length;
-            const pw = total ? Math.round((w / total) * 100) : 0;
-            const pt = total ? Math.round((t / total) * 100) : 0;
-            const pl = total ? Math.round((l / total) * 100) : 0;
-
-            document.getElementById('bar-w').style.width = `${pw}%`;
-            document.getElementById('bar-t').style.width = `${pt}%`;
-            document.getElementById('bar-l').style.width = `${pl}%`;
-
-            document.getElementById('stat-w').innerText = `${pw}% Victorias (${w})`;
-            document.getElementById('stat-t').innerText = `${pt}% Empates (${t})`;
-            document.getElementById('stat-l').innerText = `${pl}% Derrotas (${l})`;
-        }
-
-        function actualizarEstadisticasPorMazo(partidas) {
-            const contenedorMazos = document.getElementById('lista-stats-mazos');
-            contenedorMazos.innerHTML = "";
-
-            if (partidas.length === 0) {
-                contenedorMazos.innerHTML = "<p style='color:#aaa; margin:0;'>Sin datos suficientes.</p>";
-                return;
+            if (contenedor.innerHTML === "") {
+                contenedor.innerHTML = "<p style='color:#aaa;'>Aún no has registrado ninguna ronda en tus torneos apuntados.</p>";
             }
+        }
 
-            const statsMazos = {};
-            partidas.forEach(p => {
-                if (!statsMazos[p.tu_baraja]) statsMazos[p.tu_baraja] = { w: 0, l: 0, t: 0, jugadas: 0 };
-                statsMazos[p.tu_baraja].jugadas++;
-                if(p.resultado === "Victoria") statsMazos[p.tu_baraja].w++;
-                if(p.resultado === "Derrota") statsMazos[p.tu_baraja].l++;
-                if(p.resultado === "Empate") statsMazos[p.tu_baraja].t++;
-            });
-
-            const arrayStats = Object.entries(statsMazos).sort((a, b) => b[1].jugadas - a[1].jugadas);
-
-            arrayStats.forEach(([nombreMazo, stats]) => {
-                const spritesHtml = generarSpritesHtml(nombreMazo);
-                const item = document.createElement('div');
-                item.className = 'deck-stat-item';
-                item.innerHTML = `
-                    <div class="deck-stat-info">
-                        <div class="sprites-wrapper">${spritesHtml}</div> <span>${nombreMazo}</span>
-                    </div>
-                    <div class="deck-stat-record">
-                        <span class="record-w">${stats.w}V</span> - 
-                        <span class="record-l">${stats.l}D</span> - 
-                        <span class="record-t">${stats.t}E</span>
-                    </div>
-                `;
-                contenedorMazos.appendChild(item);
-            });
+        function toggleAcordeon(header) {
+            const body = header.nextElementSibling;
+            body.classList.toggle('open');
+            const arrow = header.querySelector('span:last-child');
+            arrow.innerText = body.classList.contains('open') ? '▲' : '▼';
         }
     </script>
 </body>
