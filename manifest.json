@@ -1,0 +1,22 @@
+{
+  "name": "Panel TCG",
+  "short_name": "Panel TCG",
+  "description": "Gestión competitiva y estadísticas de Pokémon TCG",
+  "start_url": "/inicio.html",
+  "display": "standalone",
+  "background_color": "#121212",
+  "theme_color": "#e3350d",
+  "icons": [
+    {
+      "src": "assets/logotipo.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
