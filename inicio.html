@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel TCG - Inicio</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Reseteo universal */
+        * { box-sizing: border-box; }
+        
+        body { background-color: #121212; color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 240px; background-color: #1a1a1a; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #2a2a2a; transition: transform 0.3s ease; z-index: 1000; }
+        .sidebar-top { padding: 20px; }
+        .sidebar h2 { font-size: 1.1em; color: #e3350d; margin-top: 0; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-links { display: flex; flex-direction: column; gap: 8px; }
+        .nav-link { display: flex; align-items: center; gap: 10px; padding: 12px 15px; color: #aaa; text-decoration: none; border-radius: 6px; font-weight: bold; transition: all 0.2s; }
+        .nav-link:hover { background-color: #2a2a2a; color: white; }
+        .nav-link.active { background-color: #e3350d; color: white; }
+        .sidebar-bottom { padding: 20px; border-top: 1px solid #2a2a2a; display: flex; flex-direction: column; gap: 8px; }
+
+        /* Cabecera Móvil Blindada */
+        .mobile-header { display: none; position: fixed; top: 0; left: 0; right: 0; background: #1a1a1a; padding: 15px 20px; border-bottom: 1px solid #2a2a2a; align-items: center; justify-content: space-between; z-index: 999; }
+        .hamburger-btn { background: none; border: none; color: white; font-size: 1.5em; cursor: pointer; }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 998; }
+        
+        /* Contenido Centralizado para la Home */
+        .main-content { flex: 1; padding: 30px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; overflow-y: auto; }
+        
+        /* Estilos del Logo y Bienvenida */
+        .team-logo { 
+            width: 250px; 
+            height: 250px; 
+            object-fit: cover; 
+            border-radius: 50%; 
+            border: 4px solid #e3350d; 
+            margin-bottom: 25px;
+            box-shadow: 0 0 35px rgba(227, 53, 13, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .team-logo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(227, 53, 13, 0.5);
+        }
+        .welcome-title { font-size: 2.5em; color: #fff; margin: 0 0 10px 0; letter-spacing: 1px; }
+        .welcome-subtitle { font-size: 1.1em; color: #aaa; margin: 0 0 30px 0; max-width: 500px; line-height: 1.5; }
+        
+        .btn-logout { width: 100%; background-color: #333; padding: 10px; font-size: 0.85em; border: none; color: white; border-radius: 6px; cursor: pointer; font-weight: bold; text-align: center; }
+        .btn-logout:hover { background-color: #444; }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; }
+            .sidebar { position: fixed; top: 0; left: -240px; height: 100%; width: 240px; }
+            .sidebar.open { transform: translateX(240px); }
+            .mobile-header { display: flex !important; }
+            .sidebar-overlay.open { display: block; }
+            .main-content { padding: 15px; margin-top: 60px !important; min-height: calc(100vh - 60px); }
+            .team-logo { width: 200px; height: 200px; }
+            .welcome-title { font-size: 2em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+    
+    <div class="mobile-header">
+        <span style="font-weight: bold; color: #e3350d; font-size: 1.1em; letter-spacing: 1px;">PANEL TCG</span>
+        <button class="hamburger-btn" onclick="toggleSidebar()">☰</button>
+    </div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+            <h2>Panel TCG</h2>
+            <div class="nav-links">
+                <a href="inicio.html" class="nav-link active">🏠 Inicio</a>
+                <a href="dashboard.html" class="nav-link">📊 Partidas</a>
+                <a href="torneos.html" class="nav-link">🏆 Torneos</a>
+                <a href="equipo.html" class="nav-link">👥 Miembros</a>
+                <a href="perfil.html" class="nav-link">👤 Mi Perfil</a>
+            </div>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="configuracion.html" class="nav-link" style="padding: 10px 15px; border-radius: 6px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 10px;">⚙️ Configuración</a>
+            <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- Reemplaza el src con el link directo a la imagen del logo de tu equipo -->
+        <img src="https://via.placeholder.com/300x300/1a1a1a/e3350d?text=LOGO+EQUIPO" alt="Logo del Equipo" class="team-logo" id="logo-equipo">
+        
+        <h1 class="welcome-title" id="texto-bienvenida">Bienvenido</h1>
+        <p class="welcome-subtitle">Panel de gestión competitiva y estadísticas de tu equipo de Pokémon TCG. Navega por el menú lateral para registrar tus resultados, analizar el metajuego o gestionar tus próximos torneos.</p>
+    </div>
+
+    <script>
+        const supabaseUrl = 'https://xacmsdklvvturxmabhcn.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhhY21zZGtsdnZ0dXJ4bWFiaGNuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3ODY4ODQsImV4cCI6MjEwNDM2Mjg4NH0.Bq9whfVe5Ah7Kz8NUKWTu5lZqGZRzHZSk-5xy3sHmWQ';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
+        async function comprobarAutenticacion() {
+            const { data: { user } } = await supabaseClient.auth.getUser();
+            if (!user) { 
+                window.location.href = "index.html"; 
+            } else {
+                // Obtener nombre de usuario para personalizar la bienvenida
+                const { data: perfil } = await supabaseClient.from('perfiles').select('nombre_usuario').eq('id', user.id).single();
+                const nombreMostrar = (perfil && perfil.nombre_usuario) ? perfil.nombre_usuario : user.email.split('@')[0];
+                document.getElementById('texto-bienvenida').innerText = `¡Hola, ${nombreMostrar}!`;
+            }
+        }
+        comprobarAutenticacion();
+
+        async function cerrarSesion() {
+            await supabaseClient.auth.signOut();
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
